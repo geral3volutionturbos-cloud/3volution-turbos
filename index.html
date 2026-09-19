@@ -456,4 +456,218 @@ function editarObra(id) {
       '<label>Estado</label><select id="e-estado">' +
         ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') +
       '</select>' +
-      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'')
+      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'') + '</textarea>' +
+    '</div>' +
+    '<div class="grid-info">' +
+      '<button class="btn btn-sec" onclick="nav(\'obra\',\'' + id + '\')">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarEdicao(\'' + id + '\')">Guardar</button>' +
+    '</div>';
+}
+
+function guardarEdicao(id) {
+  updateObra(id, {
+    cliente_nome: document.getElementById('e-nome').value,
+    cliente_telefone: document.getElementById('e-tel').value,
+    cliente_nif: document.getElementById('e-nif').value,
+    categoria: document.getElementById('e-cat').value,
+    veiculo: document.getElementById('e-veic').value,
+    matricula: document.getElementById('e-mat').value,
+    motorizacao: document.getElementById('e-mot').value,
+    ref_turbo: document.getElementById('e-ref').value,
+    data_entrega: document.getElementById('e-data').value || null,
+    estado: document.getElementById('e-estado').value,
+    notas: document.getElementById('e-notas').value
+  });
+  nav('obra', id);
+}
+
+// ===== PESQUISAR =====
+function renderPesquisar(m) {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
+    '<div class="card">' +
+      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
+      '<div class="grid-info">' +
+        '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
+          ESTADOS.map(function(e) { return '<option>' + e + '</option>'; }).join('') +
+        '</select>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<input id="p-ini" type="date" onchange="filtrar()">' +
+          '<input id="p-fim" type="date" onchange="filtrar()">' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn btn-sec" style="margin:0" onclick="limparFiltros()">Limpar filtros</button>' +
+    '</div>' +
+    '<p class="muted small" id="p-cont"></p>' +
+    '<div id="p-lista"></div>';
+  filtrar();
+}
+
+function filtrar() {
+  var b = (document.getElementById('p-busca').value || '').toLowerCase();
+  var e = document.getElementById('p-estado').value;
+  var ini = document.getElementById('p-ini').value;
+  var fim = document.getElementById('p-fim').value;
+  var res = getObras().filter(function(o) {
+    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
+      (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
+      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
+    var me = !e || o.estado === e;
+    var mi = !ini || o.data_recebido >= ini;
+    var mf = !fim || o.data_recebido <= fim;
+    return mb && me && mi && mf;
+  });
+  document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
+  document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+function limparFiltros() {
+  document.getElementById('p-busca').value = '';
+  document.getElementById('p-estado').value = '';
+  document.getElementById('p-ini').value = '';
+  document.getElementById('p-fim').value = '';
+  filtrar();
+}
+
+// ===== CLIENTES (LISTA) =====
+function renderClientesLista(m) {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  var clientes = getClientes();
+  m.innerHTML =
+    '<div class="linha" style="margin-bottom:16px">' +
+      '<h2>Clientes</h2>' +
+      '<button class="btn btn-primary btn-pequeno" onclick="nav(\'cliente-editar\', \'novo\')">➕ Novo</button>' +
+    '</div>' +
+    '<input placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value)">' +
+    '<div id="cli-lista">' + clientes.map(cardCliente).join('') + '</div>';
+}
+
+function cardCliente(c) {
+  var obras = getObras().filter(function(o){ return o.cliente_id === c.id; }).length;
+  return '<div class="cliente-card" onclick="nav(\'cliente-detalhe\',\'' + c.id + '\')">' +
+    '<div class="linha"><strong>' + c.nome + '</strong><span class="muted small">' + obras + ' obra(s)</span></div>' +
+    (c.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + c.telefone + '</div>' : '') +
+    (c.nif ? '<div class="muted small">NIF: ' + c.nif + '</div>' : '') +
+    '</div>';
+}
+
+function filtrarClientesLista(txt) {
+  var clientes = getClientes().filter(function(c) {
+    return c.nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1 ||
+      (c.telefone||'').indexOf(txt) !== -1 || (c.nif||'').indexOf(txt) !== -1;
+  });
+  document.getElementById('cli-lista').innerHTML = clientes.map(cardCliente).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+function renderClienteDetalhe(m, id) {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  var c = getCliente(id);
+  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
+  var obras = getObras().filter(function(o){ return o.cliente_id === id; });
+  m.innerHTML =
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
+      '<div style="flex:1"><div class="tag">CLIENTE</div><div class="num">' + c.nome + '</div></div>' +
+    '</div>' +
+    '<div class="card">' +
+      (c.telefone ? '<div class="campo-info"><div class="lbl">Telefone</div><div class="val"><a href="tel:' + c.telefone + '" style="color:#e11d2e;text-decoration:none">' + c.telefone + '</a></div></div>' : '') +
+      (c.nif ? '<div class="campo-info"><div class="lbl">NIF</div><div class="val">' + c.nif + '</div></div>' : '') +
+      (c.notas ? '<div class="campo-info"><div class="lbl">Notas</div><div class="val">' + c.notas + '</div></div>' : '') +
+    '</div>' +
+    '<div class="grid-info" style="margin-bottom:16px">' +
+      '<button class="btn btn-sec" onclick="nav(\'cliente-editar\',\'' + id + '\')">✏️ Editar</button>' +
+      '<button class="btn btn-primary" onclick="nav(\'nova\')">➕ Nova obra</button>' +
+    '</div>' +
+    '<h3>Obras (' + obras.length + ')</h3>' +
+    (obras.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
+}
+
+function renderClienteEditar(m, id) {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  var c = id === 'novo' ? { nome:'', telefone:'', nif:'', notas:'' } : getCliente(id);
+  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
+  m.innerHTML =
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
+      '<div><div class="tag">' + (id === 'novo' ? 'NOVO CLIENTE' : 'EDITAR CLIENTE') + '</div></div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<label>Nome *</label><input id="c-nome" value="' + (c.nome||'') + '">' +
+      '<label>Telefone</label><input id="c-tel" value="' + (c.telefone||'') + '">' +
+      '<label>NIF</label><input id="c-nif" value="' + (c.nif||'') + '">' +
+      '<label>Notas</label><textarea id="c-notas" rows="3">' + (c.notas||'') + '</textarea>' +
+    '</div>' +
+    '<div class="grid-info">' +
+      '<button class="btn btn-sec" onclick="nav(\'clientes-lista\')">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarCliente(\'' + id + '\')">Guardar</button>' +
+    '</div>' +
+    (id !== 'novo' ? '<button class="btn btn-sec" style="color:#e11d2e;margin-top:12px" onclick="apagarCliente(\'' + id + '\')">🗑️ Apagar cliente</button>' : '');
+}
+
+function guardarCliente(id) {
+  var nome = document.getElementById('c-nome').value.trim();
+  if (!nome) { alert('Nome é obrigatório'); return; }
+  var dados = {
+    nome: nome,
+    telefone: document.getElementById('c-tel').value,
+    nif: document.getElementById('c-nif').value,
+    notas: document.getElementById('c-notas').value
+  };
+  if (id === 'novo') {
+    addCliente(dados);
+  } else {
+    updateCliente(id, dados);
+  }
+  nav('clientes-lista');
+}
+
+function apagarCliente(id) {
+  if (!confirm('Apagar este cliente? As obras associadas não são apagadas.')) return;
+  removeCliente(id);
+  nav('clientes-lista');
+}
+
+// ===== CLIENTES / OBRAS (visão agrupada) =====
+function renderClientes(m) {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  var obras = getObras();
+  var grupos = {};
+  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
+  var clientes = Object.keys(grupos).sort();
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
+    '<input placeholder="Filtrar por cliente..." oninput="filtrarClientes(this.value)">' +
+    '<div id="c-lista">' + clientes.map(function(c) {
+      return '<div style="margin-top:16px">' +
+        '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
+        '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
+    }).join('') + '</div>';
+}
+
+function filtrarClientes(txt) {
+  var obras = getObras().filter(function(o) { return o.cliente_nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1; });
+  var grupos = {};
+  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
+  var clientes = Object.keys(grupos).sort();
+  document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
+    return '<div style="margin-top:16px">' +
+      '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
+      '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
+  }).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+// ===== ARRANQUE =====
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelector('.header').style.display = 'flex';
+  document.querySelector('.bottom-nav').style.display = 'grid';
+  nav('inicio');
+});
+</script>
+</body>
+</html>
