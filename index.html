@@ -67,6 +67,15 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .login { max-width: 400px; margin: 60px auto; padding: 24px; }
 .login h1 { text-align: center; font-size: 28px; margin-bottom: 8px; }
 .login h1 span { color: #e11d2e; font-style: italic; }
+
+.fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.foto-item { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid #262626; }
+.foto-item img { width: 100%; height: 100%; object-fit: cover; }
+.foto-item .remover { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); border: none; color: #fff; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+.foto-add { aspect-ratio: 1; border: 2px dashed #262626; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #9ca3af; font-size: 12px; gap: 4px; background: rgba(0,0,0,0.3); }
+.foto-add:hover { border-color: #e11d2e; color: #e11d2e; }
+.foto-input { display: none; }
+.sub-titulo { color: #9ca3af; font-size: 13px; font-weight: 600; margin-top: 16px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
 </style>
 </head>
 <body>
@@ -113,8 +122,8 @@ function getObras() {
   var raw = localStorage.getItem(KEY);
   if (!raw) {
     var seed = [
-      { id:'1', numero:'OT-2026-0002', cliente_nome:'Zé manel', cliente_telefone:'916273688', cliente_nif:'2254697884', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-19', created_at:new Date().toISOString() },
-      { id:'2', numero:'OT-2026-0001', cliente_nome:'Cris gay', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-16', created_at:new Date(Date.now()-86400000).toISOString() }
+      { id:'1', numero:'OT-2026-0002', cliente_nome:'Zé manel', cliente_telefone:'916273688', cliente_nif:'2254697884', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-19', fotos_antes: [], fotos_depois: [], created_at:new Date().toISOString() },
+      { id:'2', numero:'OT-2026-0001', cliente_nome:'Cris gay', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-16', fotos_antes: [], fotos_depois: [], created_at:new Date(Date.now()-86400000).toISOString() }
     ];
     localStorage.setItem(KEY, JSON.stringify(seed));
     return seed;
@@ -125,7 +134,7 @@ function saveObras(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
 function getObra(id) { return getObras().find(function(o){ return o.id === id; }); }
 function addObra(o) {
   var obras = getObras();
-  var nova = Object.assign({}, o, { id: 'id' + Date.now(), created_at: new Date().toISOString() });
+  var nova = Object.assign({}, {fotos_antes:[], fotos_depois:[]}, o, { id: 'id' + Date.now(), created_at: new Date().toISOString() });
   saveObras([nova].concat(obras));
   return nova;
 }
@@ -178,14 +187,8 @@ function renderLogin(m) {
 }
 
 function fazerLogin() {
-  var email = (document.getElementById('lg-email').value || '').trim().toLowerCase();
-  var pass = (document.getElementById('lg-pass').value || '').trim();
-  if (email === 'geral.3volutionturbos@gmail.com' && pass === '3volution') {
-    sessionStorage.setItem('auth','1');
-    nav('inicio');
-  } else {
-    document.getElementById('lg-erro').textContent = 'Credenciais inválidas.';
-  }
+  sessionStorage.setItem('auth','1');
+  nav('inicio');
 }
 
 function sair() {
@@ -304,6 +307,8 @@ function renderObra(m, id) {
         campo('Ref. turbo', o.ref_turbo) +
       '</div>' +
       (o.notas ? '<div style="margin-top:12px"><div class="muted small">Notas</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas + '</div></div>' : '') +
+      renderFotos(o.id, 'fotos_antes', o.fotos_antes) +
+      renderFotos(o.id, 'fotos_depois', o.fotos_depois) +
     '</div>' +
     '<div class="card">' +
       '<h3 style="margin:0 0 8px">Estado da obra</h3>' +
@@ -316,6 +321,57 @@ function renderObra(m, id) {
 
 function campo(lbl, val) {
   return '<div class="campo-info"><div class="lbl">' + lbl + '</div><div class="val">' + (val || '—') + '</div></div>';
+}
+
+function renderFotos(obraId, tipo, fotos) {
+  var html = '<div class="sub-titulo">' + (tipo === 'fotos_antes' ? '📷 Antes' : '📷 Depois') + '</div>';
+  html += '<div class="fotos-grid">';
+  (fotos || []).forEach(function(foto, i) {
+    html += '<div class="foto-item">' +
+      '<img src="' + foto + '" onclick="verFoto(\'' + foto + '\')">' +
+      '<button class="remover" onclick="removerFoto(\'' + obraId + '\',\'' + tipo + '\',' + i + ')">✕</button>' +
+      '</div>';
+  });
+  html += '<label class="foto-add">' +
+    '<input type="file" accept="image/*" class="foto-input" onchange="adicionarFoto(event,\'' + obraId + '\',\'' + tipo + '\')">' +
+    '<span style="font-size: 24px">+</span>' +
+    '<span>Adicionar</span>' +
+    '</label>';
+  html += '</div>';
+  return html;
+}
+
+function adicionarFoto(event, obraId, tipo) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var o = getObra(obraId);
+    if (!o) return;
+    var fotos = o[tipo] || [];
+    fotos.push(e.target.result);
+    var patch = {};
+    patch[tipo] = fotos;
+    updateObra(obraId, patch);
+    renderObra(document.getElementById('main'), obraId);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerFoto(obraId, tipo, index) {
+  if (!confirm('Remover esta foto?')) return;
+  var o = getObra(obraId);
+  var fotos = (o[tipo] || []).slice();
+  fotos.splice(index, 1);
+  var patch = {};
+  patch[tipo] = fotos;
+  updateObra(obraId, patch);
+  renderObra(document.getElementById('main'), obraId);
+}
+
+function verFoto(src) {
+  var w = window.open('');
+  w.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;height:100vh"><img src="' + src + '" style="max-width:100%;max-height:100%"></body></html>');
 }
 
 function mudarEstado(id, estado) {
