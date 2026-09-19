@@ -34,6 +34,7 @@ main { max-width: 640px; margin: 0 auto; padding: 16px; }
 .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
 .btn-primary { background: #e11d2e; color: #fff; }
 .btn-sec { background: #141414; border: 1px solid #262626; color: #fff; }
+.btn-pequeno { padding: 8px 12px; font-size: 14px; width: auto; margin-bottom: 0; display: inline-flex; }
 h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .linha { display: flex; justify-content: space-between; align-items: center; }
 .obra { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
@@ -67,7 +68,6 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .login { max-width: 400px; margin: 60px auto; padding: 24px; }
 .login h1 { text-align: center; font-size: 28px; margin-bottom: 8px; }
 .login h1 span { color: #e11d2e; font-style: italic; }
-
 .fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
 .foto-item { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 1px solid #262626; }
 .foto-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -76,6 +76,13 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .foto-add:hover { border-color: #e11d2e; color: #e11d2e; }
 .foto-input { display: none; }
 .sub-titulo { color: #9ca3af; font-size: 13px; font-weight: 600; margin-top: 16px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.cliente-card { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
+.cliente-card:hover { border-color: rgba(225,29,46,0.5); }
+.autocomplete { position: relative; }
+.autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #1a1a1a; border: 1px solid #262626; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; }
+.autocomplete-list.show { display: block; }
+.autocomplete-list div { padding: 12px; cursor: pointer; border-bottom: 1px solid #262626; }
+.autocomplete-list div:hover { background: #262626; }
 </style>
 </head>
 <body>
@@ -99,6 +106,7 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
       <a onclick="nav('inicio')">📋 Início</a>
       <a onclick="nav('nova')">➕ Nova obra</a>
       <a onclick="nav('pesquisar')">🔍 Pesquisar</a>
+      <a onclick="nav('clientes-lista')">👤 Clientes</a>
       <a onclick="nav('clientes')">👥 Clientes / Obras</a>
     </nav>
     <button onclick="sair()" class="sair">⏻ Sair</button>
@@ -116,14 +124,16 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 
 <script>
 var KEY = '3volution_obras';
+var KEY_CLI = '3volution_clientes';
 var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
 
+// ===== OBRAS =====
 function getObras() {
   var raw = localStorage.getItem(KEY);
   if (!raw) {
     var seed = [
-      { id:'1', numero:'OT-2026-0002', cliente_nome:'Zé manel', cliente_telefone:'916273688', cliente_nif:'2254697884', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-19', fotos_antes: [], fotos_depois: [], created_at:new Date().toISOString() },
-      { id:'2', numero:'OT-2026-0001', cliente_nome:'Cris gay', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-16', fotos_antes: [], fotos_depois: [], created_at:new Date(Date.now()-86400000).toISOString() }
+      { id:'1', numero:'OT-2026-0002', cliente_id:'c1', cliente_nome:'Zé manel', cliente_telefone:'916273688', cliente_nif:'2254697884', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-19', fotos_antes: [], fotos_depois: [], created_at:new Date().toISOString() },
+      { id:'2', numero:'OT-2026-0001', cliente_id:'c2', cliente_nome:'Cris gay', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-16', fotos_antes: [], fotos_depois: [], created_at:new Date(Date.now()-86400000).toISOString() }
     ];
     localStorage.setItem(KEY, JSON.stringify(seed));
     return seed;
@@ -150,11 +160,39 @@ function gerarNumero() {
 function fmt(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
 function hoje() { return new Date().toISOString().slice(0,10); }
 
+// ===== CLIENTES =====
+function getClientes() {
+  var raw = localStorage.getItem(KEY_CLI);
+  if (!raw) {
+    var seed = [
+      { id:'c1', nome:'Zé manel', telefone:'916273688', nif:'2254697884', notas:'' },
+      { id:'c2', nome:'Cris gay', telefone:'', nif:'', notas:'' }
+    ];
+    localStorage.setItem(KEY_CLI, JSON.stringify(seed));
+    return seed;
+  }
+  return JSON.parse(raw);
+}
+function saveClientes(c) { localStorage.setItem(KEY_CLI, JSON.stringify(c)); }
+function getCliente(id) { return getClientes().find(function(c){ return c.id === id; }); }
+function addCliente(c) {
+  var clientes = getClientes();
+  var novo = Object.assign({}, c, { id: 'c' + Date.now() });
+  saveClientes([novo].concat(clientes));
+  return novo;
+}
+function updateCliente(id, patch) {
+  saveClientes(getClientes().map(function(c){ return c.id === id ? Object.assign({}, c, patch) : c; }));
+}
+function removeCliente(id) {
+  saveClientes(getClientes().filter(function(c){ return c.id !== id; }));
+}
+
+// ===== NAVEGAÇÃO =====
 function toggleDrawer() {
   document.getElementById('drawer').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('show');
 }
-
 function nav(pagina, extra) {
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
@@ -164,40 +202,19 @@ function nav(pagina, extra) {
   });
   render(pagina, extra);
 }
-
 function render(pagina, extra) {
   var m = document.getElementById('main');
-  if (pagina === 'login') return renderLogin(m);
   if (pagina === 'inicio') return renderInicio(m);
   if (pagina === 'nova') return renderNova(m);
   if (pagina === 'pesquisar') return renderPesquisar(m);
+  if (pagina === 'clientes-lista') return renderClientesLista(m);
   if (pagina === 'clientes') return renderClientes(m);
+  if (pagina === 'cliente-detalhe') return renderClienteDetalhe(m, extra);
+  if (pagina === 'cliente-editar') return renderClienteEditar(m, extra);
   if (pagina === 'obra') return renderObra(m, extra);
 }
 
-function renderLogin(m) {
-  m.innerHTML = '<div class="login">' +
-    '<h1>3Volution<span>Turbos</span></h1>' +
-    '<p class="muted small" style="text-align:center;margin-bottom:20px">Gestão de oficina</p>' +
-    '<label>Email</label><input id="lg-email" value="geral.3volutionturbos@gmail.com">' +
-    '<label>Password</label><input id="lg-pass" type="password" placeholder="3volution">' +
-    '<div id="lg-erro" class="muted small" style="color:#e11d2e;text-align:center;min-height:18px"></div>' +
-    '<button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>' +
-    '</div>';
-}
-
-function fazerLogin() {
-  sessionStorage.setItem('auth','1');
-  nav('inicio');
-}
-
-function sair() {
-  sessionStorage.removeItem('auth');
-  document.querySelector('.header').style.display = 'none';
-  document.querySelector('.bottom-nav').style.display = 'none';
-  renderLogin(document.getElementById('main'));
-}
-
+// ===== INÍCIO =====
 function renderInicio(m) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
@@ -218,10 +235,10 @@ function renderInicio(m) {
       '<p>Obras, clientes, fotografias e estado do trabalho num só local.</p>' +
     '</div>' +
     '<div class="grid2">' +
-      '<div class="stat"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
-      '<div class="stat"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
-      '<div class="stat"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
-      '<div class="stat"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\')" style="cursor:pointer"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\')" style="cursor:pointer"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\')" style="cursor:pointer"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\')" style="cursor:pointer"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
     '</div>' +
     '<button class="btn btn-primary" onclick="nav(\'nova\')">📋 Nova folha de obra</button>' +
     '<button class="btn btn-sec" onclick="nav(\'pesquisar\')">🔍 Pesquisa rápida</button>' +
@@ -238,12 +255,20 @@ function cardObra(o) {
     '</div>';
 }
 
+// ===== NOVA OBRA (com dropdown de cliente) =====
 function renderNova(m) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
+  var clientes = getClientes();
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Nova folha de obra</h2>' +
-    '<label>Nome do cliente *</label><input id="f-cliente">' +
+    '<label>Cliente *</label>' +
+    '<div class="autocomplete">' +
+      '<input id="f-cliente-busca" placeholder="Escreve para procurar..." oninput="procurarCliente(this.value)" onfocus="procurarCliente(this.value)" autocomplete="off">' +
+      '<input type="hidden" id="f-cliente-id">' +
+      '<div id="f-cliente-lista" class="autocomplete-list"></div>' +
+    '</div>' +
+    '<button class="btn btn-sec btn-pequeno" style="margin-bottom:16px" onclick="nav(\'cliente-editar\', \'novo\')">➕ Criar novo cliente</button>' +
     '<div class="grid-info">' +
       '<div><label>Telefone</label><input id="f-tel"></div>' +
       '<div><label>NIF</label><input id="f-nif"></div>' +
@@ -259,12 +284,40 @@ function renderNova(m) {
     '<button class="btn btn-primary" onclick="guardarNova()">Criar obra</button>';
 }
 
+function procurarCliente(txt) {
+  var lista = document.getElementById('f-cliente-lista');
+  var clientes = getClientes().filter(function(c) {
+    return !txt || c.nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1 ||
+      (c.telefone||'').indexOf(txt) !== -1 || (c.nif||'').indexOf(txt) !== -1;
+  });
+  if (clientes.length === 0) { lista.classList.remove('show'); return; }
+  lista.innerHTML = clientes.map(function(c) {
+    return '<div onclick="escolherCliente(\'' + c.id + '\')">' +
+      '<strong>' + c.nome + '</strong>' +
+      (c.telefone ? '<span class="muted small"> · ' + c.telefone + '</span>' : '') +
+      '</div>';
+  }).join('');
+  lista.classList.add('show');
+}
+
+function escolherCliente(id) {
+  var c = getCliente(id);
+  if (!c) return;
+  document.getElementById('f-cliente-id').value = id;
+  document.getElementById('f-cliente-busca').value = c.nome;
+  document.getElementById('f-tel').value = c.telefone || '';
+  document.getElementById('f-nif').value = c.nif || '';
+  document.getElementById('f-cliente-lista').classList.remove('show');
+}
+
 function guardarNova() {
-  var nome = document.getElementById('f-cliente').value.trim();
-  if (!nome) { alert('Nome do cliente é obrigatório'); return; }
+  var clienteId = document.getElementById('f-cliente-id').value;
+  var clienteNome = document.getElementById('f-cliente-busca').value.trim();
+  if (!clienteNome) { alert('Escolhe ou cria um cliente'); return; }
   var nova = addObra({
     numero: gerarNumero(),
-    cliente_nome: nome,
+    cliente_id: clienteId || null,
+    cliente_nome: clienteNome,
     cliente_telefone: document.getElementById('f-tel').value,
     cliente_nif: document.getElementById('f-nif').value,
     categoria: document.getElementById('f-cat').value,
@@ -279,6 +332,7 @@ function guardarNova() {
   nav('obra', nova.id);
 }
 
+// ===== OBRA =====
 function renderObra(m, id) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
@@ -371,7 +425,7 @@ function removerFoto(obraId, tipo, index) {
 
 function verFoto(src) {
   var w = window.open('');
-  w.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;height:100vh"><img src="' + src + '" style="max-width:100%;max-height:100%"></body></html>');
+  w.document.write('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;height:100vh" onclick="window.close()"><img src="' + src + '" style="max-width:100%;max-height:100%"></body></html>');
 }
 
 function mudarEstado(id, estado) {
@@ -402,114 +456,4 @@ function editarObra(id) {
       '<label>Estado</label><select id="e-estado">' +
         ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') +
       '</select>' +
-      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'') + '</textarea>' +
-    '</div>' +
-    '<div class="grid-info">' +
-      '<button class="btn btn-sec" onclick="nav(\'obra\',\'' + id + '\')">Cancelar</button>' +
-      '<button class="btn btn-primary" onclick="guardarEdicao(\'' + id + '\')">Guardar</button>' +
-    '</div>';
-}
-
-function guardarEdicao(id) {
-  updateObra(id, {
-    cliente_nome: document.getElementById('e-nome').value,
-    cliente_telefone: document.getElementById('e-tel').value,
-    cliente_nif: document.getElementById('e-nif').value,
-    categoria: document.getElementById('e-cat').value,
-    veiculo: document.getElementById('e-veic').value,
-    matricula: document.getElementById('e-mat').value,
-    motorizacao: document.getElementById('e-mot').value,
-    ref_turbo: document.getElementById('e-ref').value,
-    data_entrega: document.getElementById('e-data').value || null,
-    estado: document.getElementById('e-estado').value,
-    notas: document.getElementById('e-notas').value
-  });
-  nav('obra', id);
-}
-
-function renderPesquisar(m) {
-  document.querySelector('.header').style.display = 'flex';
-  document.querySelector('.bottom-nav').style.display = 'grid';
-  m.innerHTML =
-    '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
-    '<div class="card">' +
-      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
-      '<div class="grid-info">' +
-        '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
-          ESTADOS.map(function(e) { return '<option>' + e + '</option>'; }).join('') +
-        '</select>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<input id="p-ini" type="date" onchange="filtrar()">' +
-          '<input id="p-fim" type="date" onchange="filtrar()">' +
-        '</div>' +
-      '</div>' +
-      '<button class="btn btn-sec" style="margin:0" onclick="limparFiltros()">Limpar filtros</button>' +
-    '</div>' +
-    '<p class="muted small" id="p-cont"></p>' +
-    '<div id="p-lista"></div>';
-  filtrar();
-}
-
-function filtrar() {
-  var b = (document.getElementById('p-busca').value || '').toLowerCase();
-  var e = document.getElementById('p-estado').value;
-  var ini = document.getElementById('p-ini').value;
-  var fim = document.getElementById('p-fim').value;
-  var res = getObras().filter(function(o) {
-    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
-      (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
-      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
-    var me = !e || o.estado === e;
-    var mi = !ini || o.data_recebido >= ini;
-    var mf = !fim || o.data_recebido <= fim;
-    return mb && me && mi && mf;
-  });
-  document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
-  document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-function limparFiltros() {
-  document.getElementById('p-busca').value = '';
-  document.getElementById('p-estado').value = '';
-  document.getElementById('p-ini').value = '';
-  document.getElementById('p-fim').value = '';
-  filtrar();
-}
-
-function renderClientes(m) {
-  document.querySelector('.header').style.display = 'flex';
-  document.querySelector('.bottom-nav').style.display = 'grid';
-  var obras = getObras();
-  var grupos = {};
-  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
-  var clientes = Object.keys(grupos).sort();
-  m.innerHTML =
-    '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
-    '<input placeholder="Filtrar por cliente..." oninput="filtrarClientes(this.value)">' +
-    '<div id="c-lista">' + clientes.map(function(c) {
-      return '<div style="margin-top:16px">' +
-        '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
-        '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
-    }).join('') + '</div>';
-}
-
-function filtrarClientes(txt) {
-  var obras = getObras().filter(function(o) { return o.cliente_nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1; });
-  var grupos = {};
-  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
-  var clientes = Object.keys(grupos).sort();
-  document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
-    return '<div style="margin-top:16px">' +
-      '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
-      '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
-  }).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-  document.querySelector('.header').style.display = 'none';
-  document.querySelector('.bottom-nav').style.display = 'none';
-  renderLogin(document.getElementById('main'));
-});
-</script>
-</body>
-</html>
+      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'')
