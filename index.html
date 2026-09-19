@@ -7,73 +7,57 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { background: #0a0a0a; color: #fff; font-family: system-ui, sans-serif; padding-bottom: 80px; }
-
-.header { position: sticky; top: 0; z-index: 30; background: rgba(10,10,10,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid #262626; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; }
+.header { position: sticky; top: 0; z-index: 30; background: rgba(10,10,10,0.95); border-bottom: 1px solid #262626; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; }
 .header h1 { font-size: 18px; font-weight: 700; }
 .header h1 span { color: #e11d2e; font-style: italic; }
 .icon-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
-
 main { max-width: 640px; margin: 0 auto; padding: 16px; }
-
 .drawer { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: #141414; z-index: 50; transform: translateX(-100%); transition: transform 0.25s; display: flex; flex-direction: column; }
 .drawer.open { transform: translateX(0); }
 .drawer-top { padding: 20px; border-bottom: 1px solid #262626; display: flex; justify-content: space-between; align-items: flex-start; }
 .drawer-top h2 { font-size: 16px; }
 .drawer nav { padding: 12px; flex: 1; }
 .drawer nav a { display: flex; gap: 12px; padding: 14px; border-radius: 8px; cursor: pointer; color: #fff; text-decoration: none; }
-.drawer nav a:hover { background: rgba(255,255,255,0.05); }
 .sair { margin: 16px; padding: 12px; background: none; border: none; color: #e11d2e; font-size: 16px; text-align: left; cursor: pointer; border-top: 1px solid #262626; }
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; display: none; }
 .overlay.show { display: block; }
-
 .card { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
 .destaque { background: linear-gradient(135deg, #141414, #000); border-radius: 24px; padding: 20px; margin-bottom: 20px; position: relative; }
 .destaque .tag { color: #e11d2e; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 .destaque h2 { font-size: 24px; font-weight: 700; margin: 4px 0; }
 .destaque p { color: #9ca3af; font-size: 14px; margin-top: 8px; }
 .destaque .icone { position: absolute; top: 20px; right: 20px; font-size: 28px; opacity: 0.7; }
-
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .stat { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 20px; }
 .stat .num { font-size: 30px; font-weight: 700; }
 .stat .lbl { color: #9ca3af; font-size: 14px; margin-top: 4px; }
-
 .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
 .btn-primary { background: #e11d2e; color: #fff; }
 .btn-sec { background: #141414; border: 1px solid #262626; color: #fff; }
-
 h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .linha { display: flex; justify-content: space-between; align-items: center; }
-
 .obra { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
 .obra .top { display: flex; justify-content: space-between; align-items: start; }
 .obra .num { font-weight: 700; }
 .obra .cliente { margin-top: 4px; }
 .obra .sub { display: flex; justify-content: space-between; margin-top: 4px; color: #9ca3af; font-size: 14px; }
-
 .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; font-weight: 500; }
 .badge.Recebido { background: rgba(30,64,175,0.6); color: #93c5fd; }
 .badge.Emreparacao { background: rgba(133,77,14,0.6); color: #fde047; }
 .badge.Pronto { background: rgba(22,101,52,0.6); color: #86efac; }
 .badge.Entregue { background: rgba(55,65,81,0.6); color: #d1d5db; }
-
 input, select, textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }
-input:focus, select:focus, textarea:focus { outline: none; border-color: #e11d2e; }
 label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
-
 .campo-info { margin-bottom: 12px; }
 .campo-info .lbl { color: #9ca3af; font-size: 14px; }
 .campo-info .val { font-weight: 500; margin-top: 2px; }
 .grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
 .estados { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
 .estados button { padding: 12px; border-radius: 12px; border: 1px solid #262626; background: rgba(0,0,0,0.4); color: #fff; font-weight: 500; font-size: 14px; cursor: pointer; }
 .estados button.ativo { background: #e11d2e; border-color: #e11d2e; }
-
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(20,20,20,0.95); backdrop-filter: blur(8px); border-top: 1px solid #262626; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 30; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(20,20,20,0.95); border-top: 1px solid #262626; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 30; }
 .bottom-nav button { background: none; border: none; color: #9ca3af; padding: 12px 0; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; }
 .bottom-nav button.ativo { color: #e11d2e; }
-
 .muted { color: #9ca3af; }
 .small { font-size: 12px; }
 .voltar { background: none; border: 1px solid #262626; color: #fff; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 18px; }
@@ -122,13 +106,13 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 </div>
 
 <script>
-const KEY = '3volution_obras';
-const ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
+var KEY = '3volution_obras';
+var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
 
 function getObras() {
-  const raw = localStorage.getItem(KEY);
+  var raw = localStorage.getItem(KEY);
   if (!raw) {
-    const seed = [
+    var seed = [
       { id:'1', numero:'OT-2026-0002', cliente_nome:'Zé manel', cliente_telefone:'916273688', cliente_nif:'2254697884', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-19', created_at:new Date().toISOString() },
       { id:'2', numero:'OT-2026-0001', cliente_nome:'Cris gay', categoria:'Reparações de Turbos', estado:'Recebido', data_recebido:'2026-09-16', created_at:new Date(Date.now()-86400000).toISOString() }
     ];
@@ -138,23 +122,23 @@ function getObras() {
   return JSON.parse(raw);
 }
 function saveObras(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
-function getObra(id) { return getObras().find(o => o.id === id); }
+function getObra(id) { return getObras().find(function(o){ return o.id === id; }); }
 function addObra(o) {
-  const obras = getObras();
-  const nova = Object.assign({}, o, { id: 'id' + Date.now(), created_at: new Date().toISOString() });
+  var obras = getObras();
+  var nova = Object.assign({}, o, { id: 'id' + Date.now(), created_at: new Date().toISOString() });
   saveObras([nova].concat(obras));
   return nova;
 }
 function updateObra(id, patch) {
-  saveObras(getObras().map(o => o.id === id ? Object.assign({}, o, patch) : o));
+  saveObras(getObras().map(function(o){ return o.id === id ? Object.assign({}, o, patch) : o; }));
 }
 function gerarNumero() {
-  const ano = new Date().getFullYear();
-  const nums = getObras().map(o => Number(o.numero.split('-')[2])).filter(n => !isNaN(n));
-  const prox = nums.length ? Math.max.apply(null, nums) + 1 : 1;
+  var ano = new Date().getFullYear();
+  var nums = getObras().map(function(o){ return Number(o.numero.split('-')[2]); }).filter(function(n){ return !isNaN(n); });
+  var prox = nums.length ? Math.max.apply(null, nums) + 1 : 1;
   return 'OT-' + ano + '-' + String(prox).padStart(4,'0');
 }
-function fmt(d) { if (!d) return '—'; const p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+function fmt(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
 function hoje() { return new Date().toISOString().slice(0,10); }
 
 function toggleDrawer() {
@@ -166,14 +150,14 @@ function nav(pagina, extra) {
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   ['inicio','nova','pesquisar'].forEach(function(p) {
-    const b = document.getElementById('bn-' + p);
+    var b = document.getElementById('bn-' + p);
     if (b) b.classList.toggle('ativo', p === pagina);
   });
   render(pagina, extra);
 }
 
 function render(pagina, extra) {
-  const m = document.getElementById('main');
+  var m = document.getElementById('main');
   if (pagina === 'login') return renderLogin(m);
   if (pagina === 'inicio') return renderInicio(m);
   if (pagina === 'nova') return renderNova(m);
@@ -190,18 +174,17 @@ function renderLogin(m) {
     '<label>Password</label><input id="lg-pass" type="password" placeholder="3volution">' +
     '<div id="lg-erro" class="muted small" style="color:#e11d2e;text-align:center;min-height:18px"></div>' +
     '<button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>' +
-    '<p class="muted small" style="text-align:center;margin-top:12px">Password: 3volution</p>' +
     '</div>';
 }
 
 function fazerLogin() {
-  const email = (document.getElementById('lg-email').value || '').trim().toLowerCase();
-  const pass = (document.getElementById('lg-pass').value || '').trim();
+  var email = (document.getElementById('lg-email').value || '').trim().toLowerCase();
+  var pass = (document.getElementById('lg-pass').value || '').trim();
   if (email === 'geral.3volutionturbos@gmail.com' && pass === '3volution') {
     sessionStorage.setItem('auth','1');
     nav('inicio');
   } else {
-    document.getElementById('lg-erro').textContent = 'Credenciais inválidas. Verifica: ' + email + ' / ' + pass;
+    document.getElementById('lg-erro').textContent = 'Credenciais inválidas.';
   }
 }
 
@@ -215,15 +198,15 @@ function sair() {
 function renderInicio(m) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
-  const obras = getObras();
-  const h = hoje();
-  const s = {
-    recebidos: obras.filter(o => o.estado === 'Recebido').length,
-    reparacao: obras.filter(o => o.estado === 'Em reparação').length,
-    prontos: obras.filter(o => o.estado === 'Pronto').length,
-    entregues: obras.filter(o => o.estado === 'Entregue' && o.data_entrega === h).length
+  var obras = getObras();
+  var h = hoje();
+  var s = {
+    recebidos: obras.filter(function(o){ return o.estado === 'Recebido'; }).length,
+    reparacao: obras.filter(function(o){ return o.estado === 'Em reparação'; }).length,
+    prontos: obras.filter(function(o){ return o.estado === 'Pronto'; }).length,
+    entregues: obras.filter(function(o){ return o.estado === 'Entregue' && o.data_entrega === h; }).length
   };
-  const recentes = obras.slice(0,3);
+  var recentes = obras.slice(0,3);
   m.innerHTML =
     '<div class="destaque">' +
       '<p class="tag">OFICINA</p>' +
@@ -274,29 +257,29 @@ function renderNova(m) {
 }
 
 function guardarNova() {
-  const nome = document.getElementById('f-cliente').value.trim();
-  if (!nome) return alert('Nome do cliente é obrigatório');
-  const nova =ce addObra({
-    numero: gerarNumbero(),
+  var nome = document.getElementById('f-cliente').value.trim();
+  if (!nome) { alert('Nome do cliente é obrigatório'); return; }
+  var nova = addObra({
+    numero: gerarNumero(),
     cliente_nome: nome,
-    cliente_teleidofone: document.getElementById('f-tel').:value,
-    cliente_nif: document.getElementById('f-n hojeif').value()
-,
-    categoria: document.getElementById ('f-cat').value,
-    veiculo: document });
-.getElementById('f-veic').value ,
-    matricula: document.getElementById('f-mat nav').value,
-    motorizacao:(' document.getElementById('f-mot').value,
-    ref_turbo: document.getElementById('obraf-ref').value,
-    notas: document.getElementById('f',-notas').value,
-    estado: 'Rece novabido',
-    data_re.id);
+    cliente_telefone: document.getElementById('f-tel').value,
+    cliente_nif: document.getElementById('f-nif').value,
+    categoria: document.getElementById('f-cat').value,
+    veiculo: document.getElementById('f-veic').value,
+    matricula: document.getElementById('f-mat').value,
+    motorizacao: document.getElementById('f-mot').value,
+    ref_turbo: document.getElementById('f-ref').value,
+    notas: document.getElementById('f-notas').value,
+    estado: 'Recebido',
+    data_recebido: hoje()
+  });
+  nav('obra', nova.id);
 }
 
 function renderObra(m, id) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
-  const o = getObra(id);
+  var o = getObra(id);
   if (!o) { m.innerHTML = '<p class="muted">Obra não encontrada.</p>'; return; }
   m.innerHTML =
     '<div class="cabecalho-obra">' +
@@ -336,15 +319,15 @@ function campo(lbl, val) {
 }
 
 function mudarEstado(id, estado) {
-  const o = getObra(id);
-  const data_entrega = estado === 'Entregue' ? hoje() : o.data_entrega;
+  var o = getObra(id);
+  var data_entrega = estado === 'Entregue' ? hoje() : o.data_entrega;
   updateObra(id, { estado: estado, data_entrega: data_entrega });
   renderObra(document.getElementById('main'), id);
 }
 
 function editarObra(id) {
-  const o = getObra(id);
-  const m = document.getElementById('main');
+  var o = getObra(id);
+  var m = document.getElementById('main');
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(\'obra\',\'' + id + '\')">←</button>' +
@@ -412,17 +395,17 @@ function renderPesquisar(m) {
 }
 
 function filtrar() {
-  const b = (document.getElementById('p-busca').value || '').toLowerCase();
-  const e = document.getElementById('p-estado').value;
-  const ini = document.getElementById('p-ini').value;
-  const fim = document.getElementById('p-fim').value;
-  const res = getObras().filter(function(o) {
-    const mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
+  var b = (document.getElementById('p-busca').value || '').toLowerCase();
+  var e = document.getElementById('p-estado').value;
+  var ini = document.getElementById('p-ini').value;
+  var fim = document.getElementById('p-fim').value;
+  var res = getObras().filter(function(o) {
+    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
       (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
       (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
-    const me = !e || o.estado === e;
-    const mi = !ini || o.data_recebido >= ini;
-    const mf = !fim || o.data_recebido <= fim;
+    var me = !e || o.estado === e;
+    var mi = !ini || o.data_recebido >= ini;
+    var mf = !fim || o.data_recebido <= fim;
     return mb && me && mi && mf;
   });
   document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
@@ -440,10 +423,10 @@ function limparFiltros() {
 function renderClientes(m) {
   document.querySelector('.header').style.display = 'flex';
   document.querySelector('.bottom-nav').style.display = 'grid';
-  const obras = getObras();
-  const grupos = {};
+  var obras = getObras();
+  var grupos = {};
   obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
-  const clientes = Object.keys(grupos).sort();
+  var clientes = Object.keys(grupos).sort();
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
     '<input placeholder="Filtrar por cliente..." oninput="filtrarClientes(this.value)">' +
@@ -455,10 +438,10 @@ function renderClientes(m) {
 }
 
 function filtrarClientes(txt) {
-  const obras = getObras().filter(function(o) { return o.cliente_nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1; });
-  const grupos = {};
+  var obras = getObras().filter(function(o) { return o.cliente_nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1; });
+  var grupos = {};
   obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
-  const clientes = Object.keys(grupos).sort();
+  var clientes = Object.keys(grupos).sort();
   document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
     return '<div style="margin-top:16px">' +
       '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
