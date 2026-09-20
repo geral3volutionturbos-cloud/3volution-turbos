@@ -15,7 +15,7 @@ try {
   } else {
     var sb = supabase.createClient(
       'https://orkaetadyzbhbawrosf.supabase.co',
-      'COLA_AQUI_A_TUA_ANON_KEY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ya2FlZXRhZHl6YmhiYXdyb3NmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDI2NDMsImV4cCI6MjEwNTQ3ODY0M30.1DFHv3ZdEIFZjdoudi2RJayGo5qqUhfKne_47fengCU'
     );
     document.getElementById('resultado').textContent = 'Cliente criado OK!';
     
