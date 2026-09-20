@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="background:#111;color:#fff;font-family:system-ui;padding:20px">
+<h1>Teste Supabase</h1>
+<div id="resultado">A testar...</div>
+<script>
+try {
+  document.getElementById('resultado').textContent = 'Tipo supabase: ' + typeof supabase;
+  if (typeof supabase === 'undefined') {
+    document.getElementById('resultado').textContent = 'ERRO: supabase é undefined';
+  } else {
+    var sb = supabase.createClient(
+      'https://orkaetadyzbhbawrosf.supabase.co',
+      'COLA_AQUI_A_TUA_ANON_KEY'
+    );
+    document.getElementById('resultado').textContent = 'Cliente criado OK!';
+    
+    sb.auth.getSession().then(function(r) {
+      document.getElementById('resultado').textContent += ' | Sessão: ' + (r.data.session ? 'sim' : 'não');
+    }).catch(function(e) {
+      document.getElementById('resultado').textContent += ' | ERRO auth: ' + e.message;
+    });
+  }
+} catch(e) {
+  document.getElementById('resultado').textContent = 'EXCEÇÃO: ' + e.message;
+}
+</script>
+</body>
+</html>
