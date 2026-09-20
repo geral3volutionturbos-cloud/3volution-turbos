@@ -35,6 +35,7 @@ main { max-width: 640px; margin: 0 auto; padding: 16px; }
 .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
 .btn-primary { background: #e11d2e; color: #fff; }
 .btn-sec { background: #141414; border: 1px solid #262626; color: #fff; }
+.btn-perigo { background: #141414; border: 1px solid #e11d2e; color: #e11d2e; }
 .btn-pequeno { padding: 8px 12px; font-size: 14px; width: auto; margin-bottom: 0; display: inline-flex; }
 h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .linha { display: flex; justify-content: space-between; align-items: center; }
@@ -48,6 +49,10 @@ h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .badge.Emreparacao { background: rgba(133,77,14,0.6); color: #fde047; }
 .badge.Pronto { background: rgba(22,101,52,0.6); color: #86efac; }
 .badge.Entregue { background: rgba(55,65,81,0.6); color: #d1d5db; }
+.badge-pago { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+.badge-pago.pago { background: rgba(22,101,52,0.6); color: #86efac; }
+.badge-pago.parcial { background: rgba(133,77,14,0.6); color: #fde047; }
+.badge-pago.divida { background: rgba(153,27,27,0.6); color: #fca5a5; }
 input, select, textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }
 label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .campo-info { margin-bottom: 12px; }
@@ -82,6 +87,11 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .autocomplete-list.show { display: block; }
 .autocomplete-list div { padding: 12px; cursor: pointer; border-bottom: 1px solid #262626; }
 .loading { text-align: center; padding: 40px; color: #9ca3af; }
+.valor-linha { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
+.valor-linha > div { flex: 1; }
+.valor-linha input { margin-bottom: 0; }
+.filtros-data { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.filtro-label { color: #9ca3af; font-size: 12px; margin-bottom: 4px; display: block; }
 </style>
 </head>
 <body>
@@ -124,30 +134,41 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 
 <script>
 // ============================================
-// CONFIGURAÇÃO — SUBSTITUI ESTES 2 VALORES!
+// CONFIGURAÇÃO
 // ============================================
-var SUPABASE_URL = 'https://jxexagghrhjxqdbbxcwl.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZXhhZ2docmhqeHFkYmJ4Y3dsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MTgzNjksImV4cCI6MjEwNTQ5NDM2OX0.0Ikid1ocKOw24mLeGqXsSOCdspjhqe4YiaxmbtVcyVY';
+var SUPABASE_URL = 'COLA_AQUI_O_TEU_URL';
+var SUPABASE_KEY = 'COLA_AQUI_A_TUA_ANON_KEY';
 // ============================================
 
 var sb = null;
 try {
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 } catch(e) {
-  document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro ao criar cliente Supabase: ' + e.message + '</div>';
+  document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro: ' + e.message + '</div>';
 }
 
 var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
+var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / Turbos novos', 'Garantia', 'Outros'];
 var userAtual = null;
 
-// Deteção de erros
 window.addEventListener('error', function(e) {
   var m = document.getElementById('main');
-  if (m) m.innerHTML = '<div class="loading" style="color:#e11d2e;text-align:left;padding:20px">' +
-    '<strong>Erro JavaScript:</strong><br>' + (e.message || 'desconhecido') +
-    '<br><br><strong>Linha:</strong> ' + (e.lineno || '?') +
-    '</div>';
+  if (m) m.innerHTML = '<div class="loading" style="color:#e11d2e;text-align:left;padding:20px"><strong>Erro:</strong><br>' + (e.message || '?') + '<br>Linha: ' + (e.lineno || '?') + '</div>';
 });
+
+// ===== HELPERS =====
+function fmt(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+function hoje() { return new Date().toISOString().slice(0,10); }
+function fmtMoeda(v) { if (v === null || v === undefined || v === '') return '—'; return Number(v).toFixed(2).replace('.', ',') + ' €'; }
+
+function estadoPagamento(o) {
+  var total = Number(o.valor_total || 0);
+  var pago = Number(o.valor_pago || 0);
+  if (total === 0) return { classe: 'divida', texto: '—' };
+  if (pago >= total) return { classe: 'pago', texto: '✅ Pago' };
+  if (pago > 0) return { classe: 'parcial', texto: '🟡 Parcial · ' + fmtMoeda(pago) + ' / ' + fmtMoeda(total) };
+  return { classe: 'divida', texto: '💰 Em dívida · ' + fmtMoeda(total) };
+}
 
 // ===== CLIENTES =====
 async function getClientes() {
@@ -185,6 +206,9 @@ async function addObra(o) {
 async function updateObra(id, patch) {
   await sb.from('obras').update(patch).eq('id', id);
 }
+async function removeObra(id) {
+  await sb.from('obras').delete().eq('id', id);
+}
 async function gerarNumero() {
   var ano = new Date().getFullYear();
   var r = await sb.from('obras').select('numero');
@@ -202,17 +226,13 @@ async function addFoto(obraId, tipo, file) {
   var ext = file.name.split('.').pop();
   var path = obraId + '/' + tipo + '_' + Date.now() + '.' + ext;
   var up = await sb.storage.from('fotos').upload(path, file);
-  if (up.error) { alert('Erro ao enviar foto: ' + up.error.message); return; }
+  if (up.error) { alert('Erro: ' + up.error.message); return; }
   var url = sb.storage.from('fotos').getPublicUrl(path).data.publicUrl;
   await sb.from('fotos').insert({ obra_id: obraId, tipo: tipo, url: url });
 }
 async function removeFoto(id) {
   await sb.from('fotos').delete().eq('id', id);
 }
-
-// ===== HELPERS =====
-function fmt(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
-function hoje() { return new Date().toISOString().slice(0,10); }
 
 // ===== NAVEGAÇÃO =====
 function toggleDrawer() {
@@ -264,10 +284,7 @@ async function fazerLogin() {
   document.getElementById('lg-erro').textContent = 'A entrar...';
   try {
     var r = await sb.auth.signInWithPassword({ email: email, password: pass });
-    if (r.error) {
-      document.getElementById('lg-erro').textContent = 'Erro: ' + r.error.message;
-      return;
-    }
+    if (r.error) { document.getElementById('lg-erro').textContent = 'Erro: ' + r.error.message; return; }
     userAtual = r.data.user;
     iniciarApp();
   } catch(e) {
@@ -319,11 +336,14 @@ async function renderInicio(m) {
 }
 
 function cardObra(o) {
+  var pag = estadoPagamento(o);
+  var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
     '<div class="top"><span class="num">' + o.numero + '</span>' +
     '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span></div>' +
     '<div class="cliente">' + o.cliente_nome + '</div>' +
     '<div class="sub"><span>' + (o.categoria||'—') + '</span><span>' + fmt(o.data_recebido) + '</span></div>' +
+    (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:8px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
     '</div>';
 }
 
@@ -343,13 +363,20 @@ async function renderNova(m) {
       '<div><label>Telefone</label><input id="f-tel"></div>' +
       '<div><label>NIF</label><input id="f-nif"></div>' +
     '</div>' +
-    '<label>Categoria</label><input id="f-cat" value="Reparações de Turbos">' +
+    '<label>Categoria</label><select id="f-cat">' +
+      CATEGORIAS.map(function(c){ return '<option>' + c + '</option>'; }).join('') +
+    '</select>' +
     '<label>Veículo</label><input id="f-veic">' +
     '<div class="grid-info">' +
       '<div><label>Matrícula</label><input id="f-mat"></div>' +
       '<div><label>Motorização</label><input id="f-mot"></div>' +
     '</div>' +
     '<label>Ref. turbo</label><input id="f-ref">' +
+    '<div class="valor-linha">' +
+      '<div><label>Valor total (€)</label><input id="f-valor" type="number" step="0.01" placeholder="0.00"></div>' +
+      '<div><label>Valor pago (€)</label><input id="f-pago" type="number" step="0.01" placeholder="0.00"></div>' +
+    '</div>' +
+    '<label>Notas de pagamento</label><textarea id="f-notas-pag" rows="2" placeholder="Ex: Deu sinal de 50€ em 20/09"></textarea>' +
     '<label>Notas</label><textarea id="f-notas" rows="3"></textarea>' +
     '<button class="btn btn-primary" onclick="guardarNova()">Criar obra</button>';
   window._clientesCache = clientes;
@@ -363,10 +390,7 @@ function procurarCliente(txt) {
   });
   if (clientes.length === 0) { lista.classList.remove('show'); return; }
   lista.innerHTML = clientes.map(function(c) {
-    return '<div onclick="escolherCliente(\'' + c.id + '\')">' +
-      '<strong>' + c.nome + '</strong>' +
-      (c.telefone ? '<span class="muted small"> · ' + c.telefone + '</span>' : '') +
-      '</div>';
+    return '<div onclick="escolherCliente(\'' + c.id + '\')"><strong>' + c.nome + '</strong>' + (c.telefone ? '<span class="muted small"> · ' + c.telefone + '</span>' : '') + '</div>';
   }).join('');
   lista.classList.add('show');
 }
@@ -397,6 +421,9 @@ async function guardarNova() {
     matricula: document.getElementById('f-mat').value,
     motorizacao: document.getElementById('f-mot').value,
     ref_turbo: document.getElementById('f-ref').value,
+    valor_total: Number(document.getElementById('f-valor').value) || 0,
+    valor_pago: Number(document.getElementById('f-pago').value) || 0,
+    notas_pagamento: document.getElementById('f-notas-pag').value,
     notas: document.getElementById('f-notas').value,
     estado: 'Recebido',
     data_recebido: hoje()
@@ -411,6 +438,8 @@ async function renderObra(m, id) {
   if (!o) { m.innerHTML = '<p class="muted">Obra não encontrada.</p>'; return; }
   var antes = await getFotos(id, 'antes');
   var depois = await getFotos(id, 'depois');
+  var pag = estadoPagamento(o);
+  var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(\'inicio\')">←</button>' +
@@ -419,358 +448,4 @@ async function renderObra(m, id) {
     '</div>' +
     '<div class="card">' +
       '<div class="linha" style="margin-bottom:16px">' +
-        '<h3 style="margin:0">' + o.cliente_nome + '</h3>' +
-        (o.cliente_telefone ? '<a href="tel:' + o.cliente_telefone + '" class="voltar">📞</a>' : '') +
-      '</div>' +
-      '<div class="grid-info">' +
-        campo('Telefone', o.cliente_telefone) +
-        campo('NIF', o.cliente_nif) +
-        campo('Categoria', o.categoria) +
-        campo('Recebido', fmt(o.data_recebido)) +
-        campo('Entregue', fmt(o.data_entrega)) +
-        campo('Veículo', o.veiculo) +
-        campo('Matrícula', o.matricula) +
-        campo('Motorização', o.motorizacao) +
-        campo('Ref. turbo', o.ref_turbo) +
-      '</div>' +
-      (o.notas ? '<div style="margin-top:12px"><div class="muted small">Notas</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas + '</div></div>' : '') +
-      renderFotos(id, 'antes', antes) +
-      renderFotos(id, 'depois', depois) +
-    '</div>' +
-    '<div class="card">' +
-      '<h3 style="margin:0 0 8px">Estado da obra</h3>' +
-      '<div class="estados">' +
-        ESTADOS.map(function(e) { return '<button class="' + (o.estado===e?'ativo':'') + '" onclick="mudarEstado(\'' + id + '\',\'' + e + '\')">' + e + '</button>'; }).join('') +
-      '</div>' +
-    '</div>' +
-    '<button class="btn btn-sec" onclick="editarObra(\'' + id + '\')">✏️ Editar obra</button>';
-}
-
-function campo(lbl, val) {
-  return '<div class="campo-info"><div class="lbl">' + lbl + '</div><div class="val">' + (val || '—') + '</div></div>';
-}
-
-function renderFotos(obraId, tipo, fotos) {
-  var html = '<div class="sub-titulo">' + (tipo === 'antes' ? '📷 Antes' : '📷 Depois') + '</div>';
-  html += '<div class="fotos-grid">';
-  fotos.forEach(function(f) {
-    html += '<div class="foto-item">' +
-      '<img src="' + f.url + '" onclick="window.open(\'' + f.url + '\',\'_blank\')">' +
-      '<button class="remover" onclick="apagarFoto(\'' + f.id + '\',\'' + obraId + '\')">✕</button>' +
-      '</div>';
-  });
-  html += '<label class="foto-add">' +
-    '<input type="file" accept="image/*" class="foto-input" onchange="enviarFoto(event,\'' + obraId + '\',\'' + tipo + '\')">' +
-    '<span style="font-size: 24px">+</span>' +
-    '<span>Adicionar</span>' +
-    '</label>';
-  html += '</div>';
-  return html;
-}
-
-async function enviarFoto(event, obraId, tipo) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var m = document.getElementById('main');
-  m.innerHTML = '<div class="loading">A enviar foto...</div>';
-  await addFoto(obraId, tipo, file);
-  renderObra(m, obraId);
-}
-
-async function apagarFoto(id, obraId) {
-  if (!confirm('Remover esta foto?')) return;
-  await removeFoto(id);
-  renderObra(document.getElementById('main'), obraId);
-}
-
-async function mudarEstado(id, estado) {
-  var o = await getObra(id);
-  var data_entrega = estado === 'Entregue' ? hoje() : o.data_entrega;
-  await updateObra(id, { estado: estado, data_entrega: data_entrega });
-  renderObra(document.getElementById('main'), id);
-}
-
-async function editarObra(id) {
-  var o = await getObra(id);
-  var m = document.getElementById('main');
-  m.innerHTML =
-    '<div class="cabecalho-obra">' +
-      '<button class="voltar" onclick="nav(\'obra\',\'' + id + '\')">←</button>' +
-      '<div><div class="tag">EDITAR</div><div class="num">' + o.numero + '</div></div>' +
-    '</div>' +
-    '<div class="card">' +
-      '<label>Nome do cliente</label><input id="e-nome" value="' + (o.cliente_nome||'') + '">' +
-      '<label>Telefone</label><input id="e-tel" value="' + (o.cliente_telefone||'') + '">' +
-      '<label>NIF</label><input id="e-nif" value="' + (o.cliente_nif||'') + '">' +
-      '<label>Categoria</label><input id="e-cat" value="' + (o.categoria||'') + '">' +
-      '<label>Veículo</label><input id="e-veic" value="' + (o.veiculo||'') + '">' +
-      '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
-      '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
-      '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
-      '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
-      '<label>Estado</label><select id="e-estado">' +
-        ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') +
-      '</select>' +
-      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'') + '</textarea>' +
-    '</div>' +
-    '<div class="grid-info">' +
-      '<button class="btn btn-sec" onclick="nav(\'obra\',\'' + id + '\')">Cancelar</button>' +
-      '<button class="btn btn-primary" onclick="guardarEdicao(\'' + id + '\')">Guardar</button>' +
-    '</div>';
-}
-
-async function guardarEdicao(id) {
-  await updateObra(id, {
-    cliente_nome: document.getElementById('e-nome').value,
-    cliente_telefone: document.getElementById('e-tel').value,
-    cliente_nif: document.getElementById('e-nif').value,
-    categoria: document.getElementById('e-cat').value,
-    veiculo: document.getElementById('e-veic').value,
-    matricula: document.getElementById('e-mat').value,
-    motorizacao: document.getElementById('e-mot').value,
-    ref_turbo: document.getElementById('e-ref').value,
-    data_entrega: document.getElementById('e-data').value || null,
-    estado: document.getElementById('e-estado').value,
-    notas: document.getElementById('e-notas').value
-  });
-  nav('obra', id);
-}
-
-// ===== PESQUISAR =====
-async function renderPesquisar(m) {
-  m.innerHTML =
-    '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
-    '<div class="card">' +
-      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
-      '<div class="grid-info">' +
-        '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
-          ESTADOS.map(function(e) { return '<option>' + e + '</option>'; }).join('') +
-        '</select>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
-          '<input id="p-ini" type="date" onchange="filtrar()">' +
-          '<input id="p-fim" type="date" onchange="filtrar()">' +
-        '</div>' +
-      '</div>' +
-      '<button class="btn btn-sec" style="margin:0" onclick="limparFiltros()">Limpar filtros</button>' +
-    '</div>' +
-    '<p class="muted small" id="p-cont"></p>' +
-    '<div id="p-lista"></div>';
-  window._todasObras = await getObras();
-  filtrar();
-}
-
-function filtrar() {
-  var b = (document.getElementById('p-busca').value || '').toLowerCase();
-  var e = document.getElementById('p-estado').value;
-  var ini = document.getElementById('p-ini').value;
-  var fim = document.getElementById('p-fim').value;
-  var res = (window._todasObras || []).filter(function(o) {
-    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
-      (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
-      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
-    var me = !e || o.estado === e;
-    var mi = !ini || o.data_recebido >= ini;
-    var mf = !fim || o.data_recebido <= fim;
-    return mb && me && mi && mf;
-  });
-  document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
-  document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-function limparFiltros() {
-  document.getElementById('p-busca').value = '';
-  document.getElementById('p-estado').value = '';
-  document.getElementById('p-ini').value = '';
-  document.getElementById('p-fim').value = '';
-  filtrar();
-}
-
-// ===== CLIENTES (LISTA) =====
-async function renderClientesLista(m) {
-  var clientes = await getClientes();
-  m.innerHTML =
-    '<div class="linha" style="margin-bottom:16px">' +
-      '<h2>Clientes</h2>' +
-      '<button class="btn btn-primary btn-pequeno" onclick="nav(\'cliente-editar\', \'novo\')">➕ Novo</button>' +
-    '</div>' +
-    '<input placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value)">' +
-    '<div id="cli-lista">' + clientes.map(cardCliente).join('') + '</div>';
-  window._clientesCache2 = clientes;
-}
-
-function cardCliente(c) {
-  return '<div class="cliente-card" onclick="nav(\'cliente-detalhe\',\'' + c.id + '\')">' +
-    '<div class="linha"><strong>' + c.nome + '</strong></div>' +
-    (c.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + c.telefone + '</div>' : '') +
-    (c.email ? '<div class="muted small">✉️ ' + c.email + '</div>' : '') +
-    (c.nif ? '<div class="muted small">NIF: ' + c.nif + '</div>' : '') +
-    (c.rua ? '<div class="muted small">📍 ' + c.rua + (c.codigo_postal ? ', ' + c.codigo_postal : '') + (c.localidade ? ' ' + c.localidade : '') + '</div>' : '') +
-    '</div>';
-}
-
-function filtrarClientesLista(txt) {
-  var clientes = (window._clientesCache2 || []).filter(function(c) {
-    return c.nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1 ||
-      (c.telefone||'').indexOf(txt) !== -1 || (c.nif||'').indexOf(txt) !== -1 ||
-      (c.email||'').toLowerCase().indexOf(txt.toLowerCase()) !== -1;
-  });
-  document.getElementById('cli-lista').innerHTML = clientes.map(cardCliente).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-async function renderClienteDetalhe(m, id) {
-  var c = await getCliente(id);
-  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
-  var obras = await getObras();
-  var minhasObras = obras.filter(function(o){ return o.cliente_id === id; });
-  m.innerHTML =
-    '<div class="cabecalho-obra">' +
-      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
-      '<div style="flex:1"><div class="tag">CLIENTE</div><div class="num">' + c.nome + '</div></div>' +
-    '</div>' +
-    '<div class="card">' +
-      (c.telefone ? '<div class="campo-info"><div class="lbl">Telefone</div><div class="val"><a href="tel:' + c.telefone + '" style="color:#e11d2e;text-decoration:none">' + c.telefone + '</a></div></div>' : '') +
-      (c.email ? '<div class="campo-info"><div class="lbl">Email</div><div class="val">' + c.email + '</div></div>' : '') +
-      (c.nif ? '<div class="campo-info"><div class="lbl">NIF</div><div class="val">' + c.nif + '</div></div>' : '') +
-      (c.rua ? '<div class="campo-info"><div class="lbl">Morada</div><div class="val">' + c.rua + (c.codigo_postal ? '<br>' + c.codigo_postal : '') + (c.localidade ? '<br>' + c.localidade : '') + '</div></div>' : '') +
-      (c.notas ? '<div class="campo-info"><div class="lbl">Notas</div><div class="val">' + c.notas + '</div></div>' : '') +
-    '</div>' +
-    '<div class="grid-info" style="margin-bottom:16px">' +
-      '<button class="btn btn-sec" onclick="nav(\'cliente-editar\',\'' + id + '\')">✏️ Editar</button>' +
-      '<button class="btn btn-primary" onclick="nav(\'nova\')">➕ Nova obra</button>' +
-    '</div>' +
-    '<h3>Obras (' + minhasObras.length + ')</h3>' +
-    (minhasObras.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
-}
-
-async function renderClienteEditar(m, id) {
-  var c = id === 'novo' ? { nome:'', telefone:'', email:'', nif:'', rua:'', codigo_postal:'', localidade:'', notas:'' } : await getCliente(id);
-  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
-  m.innerHTML =
-    '<div class="cabecalho-obra">' +
-      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
-      '<div><div class="tag">' + (id === 'novo' ? 'NOVO CLIENTE' : 'EDITAR CLIENTE') + '</div></div>' +
-    '</div>' +
-    '<div class="card">' +
-      '<label>Nome *</label><input id="c-nome" value="' + (c.nome||'') + '">' +
-      '<label>Telefone</label><input id="c-tel" value="' + (c.telefone||'') + '">' +
-      '<label>Email</label><input id="c-email" type="email" value="' + (c.email||'') + '">' +
-      '<label>NIF</label><input id="c-nif" value="' + (c.nif||'') + '">' +
-      '<label>Rua / Morada</label><input id="c-rua" value="' + (c.rua||'') + '">' +
-      '<div class="grid-info">' +
-        '<div><label>Código Postal</label><input id="c-cp" value="' + (c.codigo_postal||'') + '"></div>' +
-        '<div><label>Localidade</label><input id="c-loc" value="' + (c.localidade||'') + '"></div>' +
-      '</div>' +
-      '<label>Notas</label><textarea id="c-notas" rows="3">' + (c.notas||'') + '</textarea>' +
-    '</div>' +
-    '<div class="grid-info">' +
-      '<button class="btn btn-sec" onclick="nav(\'clientes-lista\')">Cancelar</button>' +
-      '<button class="btn btn-primary" onclick="guardarCliente(\'' + id + '\')">Guardar</button>' +
-    '</div>' +
-    (id !== 'novo' ? '<button class="btn btn-sec" style="color:#e11d2e;margin-top:12px" onclick="apagarCliente(\'' + id + '\')">🗑️ Apagar cliente</button>' : '');
-}
-
-async function guardarCliente(id) {
-  var nome = document.getElementById('c-nome').value.trim();
-  if (!nome) { alert('Nome é obrigatório'); return; }
-  var dados = {
-    nome: nome,
-    telefone: document.getElementById('c-tel').value,
-    email: document.getElementById('c-email').value,
-    nif: document.getElementById('c-nif').value,
-    rua: document.getElementById('c-rua').value,
-    codigo_postal: document.getElementById('c-cp').value,
-    localidade: document.getElementById('c-loc').value,
-    notas: document.getElementById('c-notas').value
-  };
-  if (id === 'novo') await addCliente(dados);
-  else await updateCliente(id, dados);
-  nav('clientes-lista');
-}
-
-async function apagarCliente(id) {
-  if (!confirm('Apagar este cliente? As obras associadas não são apagadas.')) return;
-  await removeCliente(id);
-  nav('clientes-lista');
-}
-
-// ===== CLIENTES / OBRAS =====
-async function renderClientes(m) {
-  var obras = await getObras();
-  var grupos = {};
-  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
-  var clientes = Object.keys(grupos).sort();
-  m.innerHTML =
-    '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
-    '<input placeholder="Filtrar por cliente..." oninput="filtrarClientes(this.value)">' +
-    '<div id="c-lista">' + clientes.map(function(c) {
-      return '<div style="margin-top:16px">' +
-        '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
-        '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
-    }).join('') + '</div>';
-  window._gruposCache = grupos;
-}
-
-function filtrarClientes(txt) {
-  var grupos = window._gruposCache || {};
-  var filtrados = {};
-  Object.keys(grupos).forEach(function(k) {
-    if (k.toLowerCase().indexOf(txt.toLowerCase()) !== -1) filtrados[k] = grupos[k];
-  });
-  var clientes = Object.keys(filtrados).sort();
-  document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
-    return '<div style="margin-top:16px">' +
-      '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + filtrados[c].length + ' obra(s)</span></div>' +
-      '<div style="margin-top:8px">' + filtrados[c].map(cardObra).join('') + '</div></div>';
-  }).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-// ===== DEFINIÇÕES =====
-async function renderDefinicoes(m) {
-  m.innerHTML =
-    '<h2 style="margin-bottom:16px">Definições</h2>' +
-    '<div class="card">' +
-      '<div class="muted small">Email da conta</div>' +
-      '<div style="font-weight:600;margin-bottom:12px">' + (userAtual ? userAtual.email : '—') + '</div>' +
-    '</div>' +
-    '<h3>Mudar password</h3>' +
-    '<div class="card">' +
-      '<label>Nova password</label><input id="d-pass" type="password" placeholder="mínimo 6 caracteres">' +
-      '<label>Confirmar password</label><input id="d-pass2" type="password">' +
-      '<div id="d-msg" class="muted small" style="min-height:18px"></div>' +
-      '<button class="btn btn-primary" onclick="mudarPassword()">Guardar nova password</button>' +
-    '</div>';
-}
-
-async function mudarPassword() {
-  var p1 = document.getElementById('d-pass').value;
-  var p2 = document.getElementById('d-pass2').value;
-  var msg = document.getElementById('d-msg');
-  if (p1.length < 6) { msg.style.color = '#e11d2e'; msg.textContent = 'A password tem de ter pelo menos 6 caracteres'; return; }
-  if (p1 !== p2) { msg.style.color = '#e11d2e'; msg.textContent = 'As passwords não coincidem'; return; }
-  msg.style.color = '#9ca3af'; msg.textContent = 'A alterar...';
-  var r = await sb.auth.updateUser({ password: p1 });
-  if (r.error) { msg.style.color = '#e11d2e'; msg.textContent = 'Erro: ' + r.error.message; return; }
-  msg.style.color = '#86efac'; msg.textContent = 'Password alterada com sucesso!';
-}
-
-// ===== ARRANQUE =====
-window.addEventListener('DOMContentLoaded', function() {
-  if (typeof supabase === 'undefined') {
-    document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">ERRO: Biblioteca Supabase não carregou. Verifica a ligação à internet.</div>';
-    return;
-  }
-  if (!sb) return;
-  sb.auth.getSession().then(function(r) {
-    if (r.data.session && r.data.session.user) {
-      userAtual = r.data.session.user;
-      iniciarApp();
-    } else {
-      renderLogin();
-    }
-  }).catch(function(e) {
-    document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro auth: ' + e.message + '</div>';
-  });
-});
-</script>
-</body>
-</html>
+        '<h3 style="margin:0">' + o.cliente_nome
