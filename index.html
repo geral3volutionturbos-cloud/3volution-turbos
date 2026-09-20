@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3VolutionTurbos</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { background: #0a0a0a; color: #fff; font-family: system-ui, sans-serif; padding-bottom: 80px; }
@@ -130,9 +130,24 @@ var SUPABASE_URL = 'https://orkaetadyzbhbawrosf.supabase.com';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ya2FlZXRhZHl6YmhiYXdyb3NmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDI2NDMsImV4cCI6MjEwNTQ3ODY0M30.1DFHv3ZdEIFZjdoudi2RJayGo5qqUhfKne_47fengCU';
 // ============================================
 
-var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var sb = null;
+try {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro ao criar cliente Supabase: ' + e.message + '</div>';
+}
+
 var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
 var userAtual = null;
+
+// Deteção de erros
+window.addEventListener('error', function(e) {
+  var m = document.getElementById('main');
+  if (m) m.innerHTML = '<div class="loading" style="color:#e11d2e;text-align:left;padding:20px">' +
+    '<strong>Erro JavaScript:</strong><br>' + (e.message || 'desconhecido') +
+    '<br><br><strong>Linha:</strong> ' + (e.lineno || '?') +
+    '</div>';
+});
 
 // ===== CLIENTES =====
 async function getClientes() {
@@ -172,7 +187,7 @@ async function updateObra(id, patch) {
 }
 async function gerarNumero() {
   var ano = new Date().getFullYear();
-  var r = await sb.from('obras').select('numero').order('created_at', { ascending: false });
+  var r = await sb.from('obras').select('numero');
   var nums = (r.data || []).map(function(o){ return Number((o.numero||'').split('-')[2]); }).filter(function(n){ return !isNaN(n); });
   var prox = nums.length ? Math.max.apply(null, nums) + 1 : 1;
   return 'OT-' + ano + '-' + String(prox).padStart(4,'0');
@@ -198,7 +213,6 @@ async function removeFoto(id) {
 // ===== HELPERS =====
 function fmt(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
 function hoje() { return new Date().toISOString().slice(0,10); }
-function esc(s) { return (s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
 // ===== NAVEGAÇÃO =====
 function toggleDrawer() {
@@ -248,13 +262,17 @@ async function fazerLogin() {
   var email = document.getElementById('lg-email').value.trim();
   var pass = document.getElementById('lg-pass').value;
   document.getElementById('lg-erro').textContent = 'A entrar...';
-  var r = await sb.auth.signInWithPassword({ email: email, password: pass });
-  if (r.error) {
-    document.getElementById('lg-erro').textContent = 'Erro: ' + r.error.message;
-    return;
+  try {
+    var r = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (r.error) {
+      document.getElementById('lg-erro').textContent = 'Erro: ' + r.error.message;
+      return;
+    }
+    userAtual = r.data.user;
+    iniciarApp();
+  } catch(e) {
+    document.getElementById('lg-erro').textContent = 'Erro: ' + e.message;
   }
-  userAtual = r.data.user;
-  iniciarApp();
 }
 
 function iniciarApp() {
@@ -383,7 +401,8 @@ async function guardarNova() {
     estado: 'Recebido',
     data_recebido: hoje()
   });
-  nav('obra', nova.id);
+  if (nova && nova.id) nav('obra', nova.id);
+  else alert('Erro ao criar obra');
 }
 
 // ===== OBRA =====
@@ -485,4 +504,273 @@ async function editarObra(id) {
       '<label>NIF</label><input id="e-nif" value="' + (o.cliente_nif||'') + '">' +
       '<label>Categoria</label><input id="e-cat" value="' + (o.categoria||'') + '">' +
       '<label>Veículo</label><input id="e-veic" value="' + (o.veiculo||'') + '">' +
-      '<label>Matrícula</label><input id="e-mat
+      '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
+      '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
+      '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
+      '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
+      '<label>Estado</label><select id="e-estado">' +
+        ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') +
+      '</select>' +
+      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'') + '</textarea>' +
+    '</div>' +
+    '<div class="grid-info">' +
+      '<button class="btn btn-sec" onclick="nav(\'obra\',\'' + id + '\')">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarEdicao(\'' + id + '\')">Guardar</button>' +
+    '</div>';
+}
+
+async function guardarEdicao(id) {
+  await updateObra(id, {
+    cliente_nome: document.getElementById('e-nome').value,
+    cliente_telefone: document.getElementById('e-tel').value,
+    cliente_nif: document.getElementById('e-nif').value,
+    categoria: document.getElementById('e-cat').value,
+    veiculo: document.getElementById('e-veic').value,
+    matricula: document.getElementById('e-mat').value,
+    motorizacao: document.getElementById('e-mot').value,
+    ref_turbo: document.getElementById('e-ref').value,
+    data_entrega: document.getElementById('e-data').value || null,
+    estado: document.getElementById('e-estado').value,
+    notas: document.getElementById('e-notas').value
+  });
+  nav('obra', id);
+}
+
+// ===== PESQUISAR =====
+async function renderPesquisar(m) {
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
+    '<div class="card">' +
+      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
+      '<div class="grid-info">' +
+        '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
+          ESTADOS.map(function(e) { return '<option>' + e + '</option>'; }).join('') +
+        '</select>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+          '<input id="p-ini" type="date" onchange="filtrar()">' +
+          '<input id="p-fim" type="date" onchange="filtrar()">' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn btn-sec" style="margin:0" onclick="limparFiltros()">Limpar filtros</button>' +
+    '</div>' +
+    '<p class="muted small" id="p-cont"></p>' +
+    '<div id="p-lista"></div>';
+  window._todasObras = await getObras();
+  filtrar();
+}
+
+function filtrar() {
+  var b = (document.getElementById('p-busca').value || '').toLowerCase();
+  var e = document.getElementById('p-estado').value;
+  var ini = document.getElementById('p-ini').value;
+  var fim = document.getElementById('p-fim').value;
+  var res = (window._todasObras || []).filter(function(o) {
+    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
+      (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
+      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
+    var me = !e || o.estado === e;
+    var mi = !ini || o.data_recebido >= ini;
+    var mf = !fim || o.data_recebido <= fim;
+    return mb && me && mi && mf;
+  });
+  document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
+  document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+function limparFiltros() {
+  document.getElementById('p-busca').value = '';
+  document.getElementById('p-estado').value = '';
+  document.getElementById('p-ini').value = '';
+  document.getElementById('p-fim').value = '';
+  filtrar();
+}
+
+// ===== CLIENTES (LISTA) =====
+async function renderClientesLista(m) {
+  var clientes = await getClientes();
+  m.innerHTML =
+    '<div class="linha" style="margin-bottom:16px">' +
+      '<h2>Clientes</h2>' +
+      '<button class="btn btn-primary btn-pequeno" onclick="nav(\'cliente-editar\', \'novo\')">➕ Novo</button>' +
+    '</div>' +
+    '<input placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value)">' +
+    '<div id="cli-lista">' + clientes.map(cardCliente).join('') + '</div>';
+  window._clientesCache2 = clientes;
+}
+
+function cardCliente(c) {
+  return '<div class="cliente-card" onclick="nav(\'cliente-detalhe\',\'' + c.id + '\')">' +
+    '<div class="linha"><strong>' + c.nome + '</strong></div>' +
+    (c.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + c.telefone + '</div>' : '') +
+    (c.email ? '<div class="muted small">✉️ ' + c.email + '</div>' : '') +
+    (c.nif ? '<div class="muted small">NIF: ' + c.nif + '</div>' : '') +
+    (c.rua ? '<div class="muted small">📍 ' + c.rua + (c.codigo_postal ? ', ' + c.codigo_postal : '') + (c.localidade ? ' ' + c.localidade : '') + '</div>' : '') +
+    '</div>';
+}
+
+function filtrarClientesLista(txt) {
+  var clientes = (window._clientesCache2 || []).filter(function(c) {
+    return c.nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1 ||
+      (c.telefone||'').indexOf(txt) !== -1 || (c.nif||'').indexOf(txt) !== -1 ||
+      (c.email||'').toLowerCase().indexOf(txt.toLowerCase()) !== -1;
+  });
+  document.getElementById('cli-lista').innerHTML = clientes.map(cardCliente).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+async function renderClienteDetalhe(m, id) {
+  var c = await getCliente(id);
+  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
+  var obras = await getObras();
+  var minhasObras = obras.filter(function(o){ return o.cliente_id === id; });
+  m.innerHTML =
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
+      '<div style="flex:1"><div class="tag">CLIENTE</div><div class="num">' + c.nome + '</div></div>' +
+    '</div>' +
+    '<div class="card">' +
+      (c.telefone ? '<div class="campo-info"><div class="lbl">Telefone</div><div class="val"><a href="tel:' + c.telefone + '" style="color:#e11d2e;text-decoration:none">' + c.telefone + '</a></div></div>' : '') +
+      (c.email ? '<div class="campo-info"><div class="lbl">Email</div><div class="val">' + c.email + '</div></div>' : '') +
+      (c.nif ? '<div class="campo-info"><div class="lbl">NIF</div><div class="val">' + c.nif + '</div></div>' : '') +
+      (c.rua ? '<div class="campo-info"><div class="lbl">Morada</div><div class="val">' + c.rua + (c.codigo_postal ? '<br>' + c.codigo_postal : '') + (c.localidade ? '<br>' + c.localidade : '') + '</div></div>' : '') +
+      (c.notas ? '<div class="campo-info"><div class="lbl">Notas</div><div class="val">' + c.notas + '</div></div>' : '') +
+    '</div>' +
+    '<div class="grid-info" style="margin-bottom:16px">' +
+      '<button class="btn btn-sec" onclick="nav(\'cliente-editar\',\'' + id + '\')">✏️ Editar</button>' +
+      '<button class="btn btn-primary" onclick="nav(\'nova\')">➕ Nova obra</button>' +
+    '</div>' +
+    '<h3>Obras (' + minhasObras.length + ')</h3>' +
+    (minhasObras.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
+}
+
+async function renderClienteEditar(m, id) {
+  var c = id === 'novo' ? { nome:'', telefone:'', email:'', nif:'', rua:'', codigo_postal:'', localidade:'', notas:'' } : await getCliente(id);
+  if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
+  m.innerHTML =
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
+      '<div><div class="tag">' + (id === 'novo' ? 'NOVO CLIENTE' : 'EDITAR CLIENTE') + '</div></div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<label>Nome *</label><input id="c-nome" value="' + (c.nome||'') + '">' +
+      '<label>Telefone</label><input id="c-tel" value="' + (c.telefone||'') + '">' +
+      '<label>Email</label><input id="c-email" type="email" value="' + (c.email||'') + '">' +
+      '<label>NIF</label><input id="c-nif" value="' + (c.nif||'') + '">' +
+      '<label>Rua / Morada</label><input id="c-rua" value="' + (c.rua||'') + '">' +
+      '<div class="grid-info">' +
+        '<div><label>Código Postal</label><input id="c-cp" value="' + (c.codigo_postal||'') + '"></div>' +
+        '<div><label>Localidade</label><input id="c-loc" value="' + (c.localidade||'') + '"></div>' +
+      '</div>' +
+      '<label>Notas</label><textarea id="c-notas" rows="3">' + (c.notas||'') + '</textarea>' +
+    '</div>' +
+    '<div class="grid-info">' +
+      '<button class="btn btn-sec" onclick="nav(\'clientes-lista\')">Cancelar</button>' +
+      '<button class="btn btn-primary" onclick="guardarCliente(\'' + id + '\')">Guardar</button>' +
+    '</div>' +
+    (id !== 'novo' ? '<button class="btn btn-sec" style="color:#e11d2e;margin-top:12px" onclick="apagarCliente(\'' + id + '\')">🗑️ Apagar cliente</button>' : '');
+}
+
+async function guardarCliente(id) {
+  var nome = document.getElementById('c-nome').value.trim();
+  if (!nome) { alert('Nome é obrigatório'); return; }
+  var dados = {
+    nome: nome,
+    telefone: document.getElementById('c-tel').value,
+    email: document.getElementById('c-email').value,
+    nif: document.getElementById('c-nif').value,
+    rua: document.getElementById('c-rua').value,
+    codigo_postal: document.getElementById('c-cp').value,
+    localidade: document.getElementById('c-loc').value,
+    notas: document.getElementById('c-notas').value
+  };
+  if (id === 'novo') await addCliente(dados);
+  else await updateCliente(id, dados);
+  nav('clientes-lista');
+}
+
+async function apagarCliente(id) {
+  if (!confirm('Apagar este cliente? As obras associadas não são apagadas.')) return;
+  await removeCliente(id);
+  nav('clientes-lista');
+}
+
+// ===== CLIENTES / OBRAS =====
+async function renderClientes(m) {
+  var obras = await getObras();
+  var grupos = {};
+  obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
+  var clientes = Object.keys(grupos).sort();
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
+    '<input placeholder="Filtrar por cliente..." oninput="filtrarClientes(this.value)">' +
+    '<div id="c-lista">' + clientes.map(function(c) {
+      return '<div style="margin-top:16px">' +
+        '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + grupos[c].length + ' obra(s)</span></div>' +
+        '<div style="margin-top:8px">' + grupos[c].map(cardObra).join('') + '</div></div>';
+    }).join('') + '</div>';
+  window._gruposCache = grupos;
+}
+
+function filtrarClientes(txt) {
+  var grupos = window._gruposCache || {};
+  var filtrados = {};
+  Object.keys(grupos).forEach(function(k) {
+    if (k.toLowerCase().indexOf(txt.toLowerCase()) !== -1) filtrados[k] = grupos[k];
+  });
+  var clientes = Object.keys(filtrados).sort();
+  document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
+    return '<div style="margin-top:16px">' +
+      '<div class="linha"><strong>' + c + '</strong><span class="muted small">' + filtrados[c].length + ' obra(s)</span></div>' +
+      '<div style="margin-top:8px">' + filtrados[c].map(cardObra).join('') + '</div></div>';
+  }).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
+
+// ===== DEFINIÇÕES =====
+async function renderDefinicoes(m) {
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">Definições</h2>' +
+    '<div class="card">' +
+      '<div class="muted small">Email da conta</div>' +
+      '<div style="font-weight:600;margin-bottom:12px">' + (userAtual ? userAtual.email : '—') + '</div>' +
+    '</div>' +
+    '<h3>Mudar password</h3>' +
+    '<div class="card">' +
+      '<label>Nova password</label><input id="d-pass" type="password" placeholder="mínimo 6 caracteres">' +
+      '<label>Confirmar password</label><input id="d-pass2" type="password">' +
+      '<div id="d-msg" class="muted small" style="min-height:18px"></div>' +
+      '<button class="btn btn-primary" onclick="mudarPassword()">Guardar nova password</button>' +
+    '</div>';
+}
+
+async function mudarPassword() {
+  var p1 = document.getElementById('d-pass').value;
+  var p2 = document.getElementById('d-pass2').value;
+  var msg = document.getElementById('d-msg');
+  if (p1.length < 6) { msg.style.color = '#e11d2e'; msg.textContent = 'A password tem de ter pelo menos 6 caracteres'; return; }
+  if (p1 !== p2) { msg.style.color = '#e11d2e'; msg.textContent = 'As passwords não coincidem'; return; }
+  msg.style.color = '#9ca3af'; msg.textContent = 'A alterar...';
+  var r = await sb.auth.updateUser({ password: p1 });
+  if (r.error) { msg.style.color = '#e11d2e'; msg.textContent = 'Erro: ' + r.error.message; return; }
+  msg.style.color = '#86efac'; msg.textContent = 'Password alterada com sucesso!';
+}
+
+// ===== ARRANQUE =====
+window.addEventListener('DOMContentLoaded', function() {
+  if (typeof supabase === 'undefined') {
+    document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">ERRO: Biblioteca Supabase não carregou. Verifica a ligação à internet.</div>';
+    return;
+  }
+  if (!sb) return;
+  sb.auth.getSession().then(function(r) {
+    if (r.data.session && r.data.session.user) {
+      userAtual = r.data.session.user;
+      iniciarApp();
+    } else {
+      renderLogin();
+    }
+  }).catch(function(e) {
+    document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro auth: ' + e.message + '</div>';
+  });
+});
+</script>
+</body>
+</html>
