@@ -535,26 +535,32 @@ async function apagarObra(id) {
   await removeObra(id);
   nav('inicio');
 }
-
 function renderFotos(obraId, tipo, fotos) {
   var html = '<div class="sub-titulo">' + (tipo === 'antes' ? '📷 Antes' : '📷 Depois') + '</div>';
   html += '<div class="fotos-grid">';
   fotos.forEach(function(f) {
-    html += '<div class="foto-item"><img src="' + f.urlFoto + '" onclick="window.open(\'' + f.url( + '\',\'_blank\')"><obrabutton class="remover" onclick="apagarIdFoto(\'' + f.id + '\',\'' + obraId + '\')">✕</button></div>';
+    html += '<div class="foto-item"><img src="' + f.url + '" onclick="window.open(\'' + f.url + '\',\'_blank\')"><button class="remover" onclick="apagarFoto(\'' + f.id + '\',\'' + obraId + '\')">✕</button></div>';
   });
   html += '<label class="foto-add"><input type="file" accept="image/*" class="foto-input" onchange="enviarFoto(event,\'' + obraId + '\',\'' + tipo + '\')"><span style="font-size: 24px">+</span><span>Adicionar</span></label>';
   html += '</div>';
   return html;
 }
 
+  
+
 async function enviarFoto(event, obraId, tipo) {
   var file = event.target.files[0];
   if (!file) return;
   var m = document.getElementById('main');
   m.innerHTML = '<div class="loading">A enviar foto para o R2...</div>';
-  await add, tipo, file);
+  await addFoto(obraId, tipo, file);
   renderObra(m, obraId);
 }
+
+
+
+
+  
 
 async function apagarFoto(id, obraId) {
   if (!confirm('Remover esta foto?')) return;
