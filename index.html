@@ -118,8 +118,9 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
       <a onclick="nav('pesquisar')">🔍 Pesquisar</a>
       <a onclick="nav('clientes-lista')">👤 Clientes</a>
       <a onclick="nav('clientes')">👥 Clientes / Obras</a>
+   <a onclick="nav('clientes')">👥 Clientes / Obras</a>
+      <a onclick="nav('relatorios')">📊 Relatórios</a>
       <a onclick="nav('definicoes')">⚙️ Definições</a>
-    </nav>
     <button onclick="sair()" class="sair">⏻ Sair</button>
   </aside>
   <div id="overlay" class="overlay" onclick="toggleDrawer()"></div>
@@ -324,7 +325,8 @@ function render(pagina, extra) {
   if (pagina === 'cliente-detalhe') return renderClienteDetalhe(m, extra);
   if (pagina === 'cliente-editar') return renderClienteEditar(m, extra);
   if (pagina === 'obra') return renderObra(m, extra);
-  if (pagina === 'definicoes') return renderDefinicoes(m);
+if (pagina === 'definicoes') return renderDefinicoes(m);
+  if (pagina === 'relatorios') return renderRelatorios(m);
 }
 
 // ===== LOGIN =====
@@ -911,6 +913,126 @@ async function mudarPassword() {
   var r = await sb.auth.updateUser({ password: p1 });
   if (r.error) { msg.style.color = '#e11d2e'; msg.textContent = 'Erro: ' + r.error.message; return; }
   msg.style.color = '#86efac'; msg.textContent = 'Password alterada!';
+}
+
+// ===== RELATÓRIOS =====
+async function renderRelatorios(m) {
+  var obras = await getObras();
+  var anoAtual = new Date().getFullYear();
+
+  m.innerHTML = '<h2 style="margin-bottom:16px">📊 Relatórios</h2>' +
+    '<div class="loading">A calcular...</div>';
+
+  // Totais gerais
+  var totalFacturado = 0, totalPago = 0, totalDivida = 0;
+  obras.forEach(function(o) {
+    var t = Number(o.valor_total || 0);
+    var p = Number(o.valor_pago || 0);
+    totalFacturado += t;
+    totalPago += p;
+    totalDivida += (t - p);
+  });
+
+  // Por mês (ano atual)
+  var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var porMes = [];
+  for (var i = 0; i < 12; i++) porMes.push({ facturado: 0, recebido: 0, obras: 0 });
+  obras.forEach(function(o) {
+    if (!o.data_recebido) return;
+    var d = new Date(o.data_recebido + 'T00:00:00');
+    if (d.getFullYear() !== anoAtual) return;
+    var mes = d.getMonth();
+    porMes[mes].facturado += Number(o.valor_total || 0);
+    porMes[mes].recebido += Number(o.valor_pago || 0);
+    porMes[mes].obras++;
+  });
+
+  // Por ano
+  var porAno = {};
+  obras.forEach(function(o) {
+    if (!o.data_recebido) return;
+    var ano = o.data_recebido.slice(0, 4);
+    if (!porAno[ano]) porAno[ano] = { facturado: 0, recebido: 0, obras: 0 };
+    porAno[ano].facturado += Number(o.valor_total || 0);
+    porAno[ano].recebido += Number(o.valor_pago || 0);
+    porAno[ano].obras++;
+  });
+  var anos = Object.keys(porAno).sort().reverse();
+
+  // Por cliente
+  var porCliente = {};
+  obras.forEach(function(o) {
+    var k = o.cliente_nome || '—';
+    if (!porCliente[k]) porCliente[k] = { facturado: 0, recebido: 0, divida: 0, obras: 0 };
+    var t = Number(o.valor_total || 0);
+    var p = Number(o.valor_pago || 0);
+    porCliente[k].facturado += t;
+    porCliente[k].recebido += p;
+    porCliente[k].divida += (t - p);
+    porCliente[k].obras++;
+  });
+  var clientes = Object.keys(porCliente).sort(function(a, b) {
+    return porCliente[b].facturado - porCliente[a].facturado;
+  });
+
+  m.innerHTML =
+    '<h2 style="margin-bottom:16px">📊 Relatórios</h2>' +
+
+    // Totais
+    '<div class="card">' +
+      '<h3 style="margin-top:0">Totais gerais</h3>' +
+      '<div class="grid-info">' +
+        '<div class="campo-info"><div class="lbl">Total facturado</div><div class="val" style="color:#86efac">' + fmtMoeda(totalFacturado) + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Total recebido</div><div class="val">' + fmtMoeda(totalPago) + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Em dívida</div><div class="val" style="color:#fca5a5">' + fmtMoeda(totalDivida) + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Nº de obras</div><div class="val">' + obras.length + '</div></div>' +
+      '</div>' +
+    '</div>' +
+
+    // Por mês
+    '<div class="card">' +
+      '<h3 style="margin-top:0">Por mês (' + anoAtual + ')</h3>' +
+      meses.map(function(nome, idx) {
+        var d = porMes[idx];
+        if (d.obras === 0 && d.facturado === 0) {
+          return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626;color:#6b7280"><span>' + nome + '</span><span>—</span></div>';
+        }
+        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626">' +
+          '<span><strong>' + nome + '</strong> <span class="muted small">(' + d.obras + ' obras)</span></span>' +
+          '<span><span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span> <span class="muted small">de ' + fmtMoeda(d.facturado) + '</span></span>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+
+    // Por ano
+    '<div class="card">' +
+      '<h3 style="margin-top:0">Por ano</h3>' +
+      (anos.length ? anos.map(function(ano) {
+        var d = porAno[ano];
+        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626">' +
+          '<span><strong>' + ano + '</strong> <span class="muted small">(' + d.obras + ' obras)</span></span>' +
+          '<span><span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span> <span class="muted small">de ' + fmtMoeda(d.facturado) + '</span></span>' +
+        '</div>';
+      }).join('') : '<p class="muted small">Sem dados.</p>') +
+    '</div>' +
+
+    // Por cliente
+    '<div class="card">' +
+      '<h3 style="margin-top:0">Por cliente</h3>' +
+      (clientes.length ? clientes.map(function(c) {
+        var d = porCliente[c];
+        return '<div style="padding:8px 0;border-bottom:1px solid #262626">' +
+          '<div style="display:flex;justify-content:space-between">' +
+            '<strong>' + c + '</strong>' +
+            '<span style="color:#86efac">' + fmtMoeda(d.facturado) + '</span>' +
+          '</div>' +
+          '<div class="muted small" style="margin-top:4px">' +
+            d.obras + ' obra(s) · Recebido: ' + fmtMoeda(d.recebido) +
+            (d.divida > 0.01 ? ' · <span style="color:#fca5a5">Em dívida: ' + fmtMoeda(d.divida) + '</span>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('') : '<p class="muted small">Sem dados.</p>') +
+    '</div>';
 }
 
 // ===== ARRANQUE =====
