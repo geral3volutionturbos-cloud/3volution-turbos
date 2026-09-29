@@ -922,26 +922,42 @@ async function renderRelatorios(m) {
   m.innerHTML = '<h2 style="margin-bottom:16px">📊 Relatórios</h2>' +
     '<div class="loading">A calcular...</div>';
 
-  // Totais gerais
-  var totalFacturado = 0, totalPago = 0, totalDivida = 0;
+  // Totais
+  var totalPago = 0, totalDividaEntregues = 0;
+  var obrasEntreguesSemPagar = [];
+
   obras.forEach(function(o) {
     var t = Number(o.valor_total || 0);
     var p = Number(o.valor_pago || 0);
-    totalFacturado += t;
     totalPago += p;
-    totalDivida += (t - p);
+    // Dívida só conta para obras ENTREGUES com valor em falta
+    if (o.estado === 'Entregue' && (t - p) > 0.01) {
+      totalDividaEntregues += (t - p);
+      obrasEntreguesSemPagar.push(o);
+    }
   });
 
-  // Por mês (ano atual)
+  // Devedores: agrupar por cliente
+  var devedores = {};
+  obrasEntreguesSemPagar.forEach(function(o) {
+    var k = o.cliente_nome || '—';
+    if (!devedores[k]) devedores[k] = { divida: 0, obras: [], telefone: o.cliente_telefone };
+    devedores[k].divida += (Number(o.valor_total || 0) - Number(o.valor_pago || 0));
+    devedores[k].obras.push(o);
+  });
+  var listaDevedores = Object.keys(devedores).sort(function(a, b) {
+    return devedores[b].divida - devedores[a].divida;
+  });
+
+  // Por mês (ano atual) — valor recebido
   var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var porMes = [];
-  for (var i = 0; i < 12; i++) porMes.push({ facturado: 0, recebido: 0, obras: 0 });
+  for (var i = 0; i < 12; i++) porMes.push({ recebido: 0, obras: 0 });
   obras.forEach(function(o) {
     if (!o.data_recebido) return;
     var d = new Date(o.data_recebido + 'T00:00:00');
     if (d.getFullYear() !== anoAtual) return;
     var mes = d.getMonth();
-    porMes[mes].facturado += Number(o.valor_total || 0);
     porMes[mes].recebido += Number(o.valor_pago || 0);
     porMes[mes].obras++;
   });
@@ -951,27 +967,22 @@ async function renderRelatorios(m) {
   obras.forEach(function(o) {
     if (!o.data_recebido) return;
     var ano = o.data_recebido.slice(0, 4);
-    if (!porAno[ano]) porAno[ano] = { facturado: 0, recebido: 0, obras: 0 };
-    porAno[ano].facturado += Number(o.valor_total || 0);
+    if (!porAno[ano]) porAno[ano] = { recebido: 0, obras: 0 };
     porAno[ano].recebido += Number(o.valor_pago || 0);
     porAno[ano].obras++;
   });
   var anos = Object.keys(porAno).sort().reverse();
 
-  // Por cliente
+  // Por cliente (valor pago)
   var porCliente = {};
   obras.forEach(function(o) {
     var k = o.cliente_nome || '—';
-    if (!porCliente[k]) porCliente[k] = { facturado: 0, recebido: 0, divida: 0, obras: 0 };
-    var t = Number(o.valor_total || 0);
-    var p = Number(o.valor_pago || 0);
-    porCliente[k].facturado += t;
-    porCliente[k].recebido += p;
-    porCliente[k].divida += (t - p);
+    if (!porCliente[k]) porCliente[k] = { pago: 0, obras: 0 };
+    porCliente[k].pago += Number(o.valor_pago || 0);
     porCliente[k].obras++;
   });
   var clientes = Object.keys(porCliente).sort(function(a, b) {
-    return porCliente[b].facturado - porCliente[a].facturado;
+    return porCliente[b].pago - porCliente[a].pago;
   });
 
   m.innerHTML =
@@ -981,54 +992,66 @@ async function renderRelatorios(m) {
     '<div class="card">' +
       '<h3 style="margin-top:0">Totais gerais</h3>' +
       '<div class="grid-info">' +
-        '<div class="campo-info"><div class="lbl">Total facturado</div><div class="val" style="color:#86efac">' + fmtMoeda(totalFacturado) + '</div></div>' +
-        '<div class="campo-info"><div class="lbl">Total recebido</div><div class="val">' + fmtMoeda(totalPago) + '</div></div>' +
-        '<div class="campo-info"><div class="lbl">Em dívida</div><div class="val" style="color:#fca5a5">' + fmtMoeda(totalDivida) + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Total recebido</div><div class="val" style="color:#86efac">' + fmtMoeda(totalPago) + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Total em dívida (entregues)</div><div class="val" style="color:#fca5a5">' + fmtMoeda(totalDividaEntregues) + '</div></div>' +
         '<div class="campo-info"><div class="lbl">Nº de obras</div><div class="val">' + obras.length + '</div></div>' +
+        '<div class="campo-info"><div class="lbl">Clientes em dívida</div><div class="val" style="color:#fca5a5">' + listaDevedores.length + '</div></div>' +
       '</div>' +
+    '</div>' +
+
+    // Devedores
+    '<div class="card" style="border-color:#991b1b">' +
+      '<h3 style="margin-top:0;color:#fca5a5">💸 Devedores (entregues sem pagar)</h3>' +
+      (listaDevedores.length ? listaDevedores.map(function(c) {
+        var d = devedores[c];
+        return '<div style="padding:10px 0;border-bottom:1px solid #262626">' +
+          '<div style="display:flex;justify-content:space-between">' +
+            '<strong>' + c + '</strong>' +
+            '<span style="color:#fca5a5;font-weight:700">' + fmtMoeda(d.divida) + '</span>' +
+          '</div>' +
+          (d.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + d.telefone + '</div>' : '') +
+          '<div class="muted small" style="margin-top:4px">' + d.obras.length + ' obra(s): ' +
+            d.obras.map(function(o){ return o.numero; }).join(', ') +
+          '</div>' +
+        '</div>';
+      }).join('') : '<p class="muted small">Ninguém em dívida. 🎉</p>') +
     '</div>' +
 
     // Por mês
     '<div class="card">' +
-      '<h3 style="margin-top:0">Por mês (' + anoAtual + ')</h3>' +
+      '<h3 style="margin-top:0">Recebido por mês (' + anoAtual + ')</h3>' +
       meses.map(function(nome, idx) {
         var d = porMes[idx];
-        if (d.obras === 0 && d.facturado === 0) {
+        if (d.obras === 0 && d.recebido === 0) {
           return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626;color:#6b7280"><span>' + nome + '</span><span>—</span></div>';
         }
         return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626">' +
           '<span><strong>' + nome + '</strong> <span class="muted small">(' + d.obras + ' obras)</span></span>' +
-          '<span><span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span> <span class="muted small">de ' + fmtMoeda(d.facturado) + '</span></span>' +
+          '<span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span>' +
         '</div>';
       }).join('') +
     '</div>' +
 
     // Por ano
     '<div class="card">' +
-      '<h3 style="margin-top:0">Por ano</h3>' +
+      '<h3 style="margin-top:0">Recebido por ano</h3>' +
       (anos.length ? anos.map(function(ano) {
         var d = porAno[ano];
         return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626">' +
           '<span><strong>' + ano + '</strong> <span class="muted small">(' + d.obras + ' obras)</span></span>' +
-          '<span><span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span> <span class="muted small">de ' + fmtMoeda(d.facturado) + '</span></span>' +
+          '<span style="color:#86efac">' + fmtMoeda(d.recebido) + '</span>' +
         '</div>';
       }).join('') : '<p class="muted small">Sem dados.</p>') +
     '</div>' +
 
     // Por cliente
     '<div class="card">' +
-      '<h3 style="margin-top:0">Por cliente</h3>' +
+      '<h3 style="margin-top:0">Recebido por cliente</h3>' +
       (clientes.length ? clientes.map(function(c) {
         var d = porCliente[c];
-        return '<div style="padding:8px 0;border-bottom:1px solid #262626">' +
-          '<div style="display:flex;justify-content:space-between">' +
-            '<strong>' + c + '</strong>' +
-            '<span style="color:#86efac">' + fmtMoeda(d.facturado) + '</span>' +
-          '</div>' +
-          '<div class="muted small" style="margin-top:4px">' +
-            d.obras + ' obra(s) · Recebido: ' + fmtMoeda(d.recebido) +
-            (d.divida > 0.01 ? ' · <span style="color:#fca5a5">Em dívida: ' + fmtMoeda(d.divida) + '</span>' : '') +
-          '</div>' +
+        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626">' +
+          '<span><strong>' + c + '</strong> <span class="muted small">(' + d.obras + ' obras)</span></span>' +
+          '<span style="color:#86efac">' + fmtMoeda(d.pago) + '</span>' +
         '</div>';
       }).join('') : '<p class="muted small">Sem dados.</p>') +
     '</div>';
