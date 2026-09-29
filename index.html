@@ -389,10 +389,10 @@ async function renderInicio(m) {
       '<p>Obras, clientes, fotografias e estado do trabalho num só local.</p>' +
     '</div>' +
     '<div class="grid2">' +
-      '<div class="stat"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
-      '<div class="stat"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
-      '<div class="stat"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
-      '<div class="stat"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Recebido\')" style="cursor:pointer"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Em reparação\')" style="cursor:pointer"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Pronto\')" style="cursor:pointer"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Entregue\')" style="cursor:pointer"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
     '</div>' +
     '<button class="btn btn-primary" onclick="nav(\'nova\')">📋 Nova folha de obra</button>' +
     '<button class="btn btn-sec" onclick="nav(\'pesquisar\')">🔍 Pesquisa rápida</button>' +
@@ -676,15 +676,15 @@ async function guardarEdicao(id) {
 }
 
 // ===== PESQUISAR =====
-async function renderPesquisar(m) {
+async function renderPesquisar(m, filtroEstado) {
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
     '<div class="card">' +
       '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
       '<label class="filtro-label">Estado da obra</label>' +
       '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
-        ESTADOS.map(function(e) { return '<option>' + e + '</option>'; }).join('') +
-      '</select>' +
+  ESTADOS.map(function(e) { return '<option' + (filtroEstado === e ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
+'</select>' +
       '<label class="filtro-label">Categoria</label>' +
       '<select id="p-cat" onchange="filtrar()"><option value="">Todas as categorias</option>' +
         CATEGORIAS.map(function(c) { return '<option>' + c + '</option>'; }).join('') +
