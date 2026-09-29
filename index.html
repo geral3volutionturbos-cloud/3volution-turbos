@@ -318,7 +318,7 @@ function render(pagina, extra) {
   m.innerHTML = '<div class="loading">A carregar...</div>';
   if (pagina === 'inicio') return renderInicio(m);
   if (pagina === 'nova') return renderNova(m);
-  if (pagina === 'pesquisar') return renderPesquisar(m);
+  if (pagina === 'pesquisar') return renderPesquisar(m, extra);
   if (pagina === 'clientes-lista') return renderClientesLista(m);
   if (pagina === 'clientes') return renderClientes(m);
   if (pagina === 'cliente-detalhe') return renderClienteDetalhe(m, extra);
