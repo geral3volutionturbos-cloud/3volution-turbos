@@ -226,28 +226,71 @@ async function getFotos(obraId, tipo) {
   return r.data || [];
 }
 
+async function comprimirImagem(file, maxLargura, qualidade) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var w = img.width;
+        var h = img.height;
+        if (w > maxLargura) {
+          h = Math.round(h * maxLargura / w);
+          w = maxLargura;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function(blob) {
+          if (!blob) { reject(new Error('Erro a comprimir')); return; }
+          resolve(blob);
+        }, 'image/jpeg', qualidade);
+      };
+      img.onerror = function() { reject(new Error('Erro a ler imagem')); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function() { reject(new Error('Erro a ler ficheiro')); };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function addFoto(obraId, tipo, file) {
-  // 1. Pede URL assinado à Edge Function
+  // 1. Comprimir a imagem
+  var blob;
+  try {
+    blob = await comprimirImagem(file, 1920, 0.85);
+  } catch(e) {
+    alert('Erro a comprimir: ' + e.message);
+    return;
+  }
+
+  // 2. Gerar nome do ficheiro
+  var ext = 'jpg';
+  var nomeFicheiro = 'foto_' + Date.now() + '.' + ext;
+
+  // 3. Pede URL assinado à Edge Function
   var resp = await fetch(SUPABASE_URL + '/functions/v1/quick-worker', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + SUPABASE_KEY
     },
-    body: JSON.stringify({ fileName: file.name, contentType: file.type })
+    body: JSON.stringify({ fileName: nomeFicheiro, contentType: 'image/jpeg' })
   });
   var json = await resp.json();
   if (json.error) { alert('Erro ao preparar upload: ' + json.error); return; }
 
-  // 2. Faz upload direto para o R2
+  // 4. Faz upload direto para o R2 (agora com o blob comprimido)
   var up = await fetch(json.uploadUrl, {
     method: 'PUT',
-    body: file,
-    headers: { 'Content-Type': file.type }
+    body: blob,
+    headers: { 'Content-Type': 'image/jpeg' }
   });
   if (!up.ok) { alert('Erro no upload: ' + up.status); return; }
 
-  // 3. Guarda URL na base de dados
+  // 5. Guarda URL na base de dados
   var publicUrl = R2_PUBLIC_URL + '/' + json.key;
   await sb.from('fotos').insert({ obra_id: obraId, tipo: tipo, url: publicUrl });
 }
