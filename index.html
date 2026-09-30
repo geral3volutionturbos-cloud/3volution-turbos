@@ -1051,6 +1051,41 @@ async function renderRelatorios(m) {
       }).join('') : '<p class="muted small">Sem dados.</p>') +
     '</div>';
 }
+// ===== OBRAS DO DEVEDOR =====
+async function abrirObrasDevedor(nomeCliente) {
+  var m = document.getElementById('main');
+  m.innerHTML = '<div class="loading">A carregar...</div>';
+
+  var obras = await getObras();
+  var obrasCliente = obras.filter(function(o) {
+    if (o.cliente_nome !== nomeCliente) return false;
+    if (o.estado !== 'Entregue') return false;
+    var total = Number(o.valor_total || 0);
+    var pago = Number(o.valor_pago || 0);
+    return (total - pago) > 0.01;
+  });
+
+  var totalDivida = obrasCliente.reduce(function(soma, o) {
+    return soma + (Number(o.valor_total || 0) - Number(o.valor_pago || 0));
+  }, 0);
+
+  var telefone = obrasCliente[0] ? obrasCliente[0].cliente_telefone : '';
+
+  m.innerHTML =
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'relatorios\')">←</button>' +
+      '<div style="flex:1"><div class="tag">DEVEDOR</div><div class="num">' + nomeCliente + '</div></div>' +
+    '</div>' +
+    '<div class="card" style="border-color:#991b1b">' +
+      '<div class="campo-info"><div class="lbl">Total em dívida</div><div class="val" style="color:#fca5a5;font-size:24px">' + fmtMoeda(totalDivida) + '</div></div>' +
+      (telefone ? '<div class="campo-info"><div class="lbl">Telefone</div><div class="val"><a href="tel:' + telefone + '" style="color:#e11d2e;text-decoration:none">' + telefone + ' 📞</a></div></div>' : '') +
+      '<div class="campo-info"><div class="lbl">Obras em dívida</div><div class="val">' + obrasCliente.length + '</div></div>' +
+    '</div>' +
+    '<h3>Obras em dívida</h3>' +
+    (obrasCliente.map(cardObra).join('') || '<p class="muted small">Sem obras.</p>');
+
+  window.scrollTo(0, 0);
+}
 
 // ===== ARRANQUE =====
 window.addEventListener('DOMContentLoaded', function() {
