@@ -149,7 +149,8 @@ try {
   document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro: ' + e.message + '</div>';
 }
 
-var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / Turbos novos', 'Material e turbos novos', 'Tubagens / Embraiagem', 'Mecânica', 'Garantia', 'Outros'];
+var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
+var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / Turbos novos', 'Material e turbos novos', 'Tubagens / Embraiagem', 'Mecânica', 'Garantia', 'Outros'];  
 
 window.addEventListener('error', function(e) {
   var m = document.getElementById('main');
