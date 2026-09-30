@@ -1002,18 +1002,15 @@ async function renderRelatorios(m) {
       '<h3 style="margin-top:0;color:#fca5a5">💸 Devedores (entregues sem pagar)</h3>' +
       (listaDevedores.length ? listaDevedores.map(function(c) {
         var d = devedores[c];
-        return '<div style="padding:10px 0;border-bottom:1px solid #262626">' +
+        return '<div style="padding:12px 0;border-bottom:1px solid #262626;cursor:pointer" onclick="abrirObrasDevedor(\'' + c.replace(/'/g, "\\'") + '\')">' +
           '<div style="display:flex;justify-content:space-between">' +
             '<strong>' + c + '</strong>' +
             '<span style="color:#fca5a5;font-weight:700">' + fmtMoeda(d.divida) + '</span>' +
           '</div>' +
           (d.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + d.telefone + '</div>' : '') +
-          '<div class="muted small" style="margin-top:4px">' + d.obras.length + ' obra(s): ' +
-            d.obras.map(function(o){ return o.numero; }).join(', ') +
-          '</div>' +
+          '<div class="muted small" style="margin-top:4px">' + d.obras.length + ' obra(s) · <span style="color:#e11d2e">Ver detalhes →</span></div>' +
         '</div>';
       }).join('') : '<p class="muted small">Ninguém em dívida. 🎉</p>') +
-    '</div>' +
 
     // Por mês
     '<div class="card">' +
