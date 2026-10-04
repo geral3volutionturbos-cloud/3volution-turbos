@@ -173,9 +173,20 @@ function estadoPagamento(o) {
 }
 
 // ===== CLIENTES =====
-async function getClientes() {
-  var r = await sb.from('clientes').select('*').order('nome');
-  return r.data || [];
+async function getObras() {
+  var todas = [];
+  var offset = 0;
+  var limite = 1000;
+  while (true) {
+    var r = await sb.from('obras').select('*')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limite - 1);
+    if (!r.data || r.data.length === 0) break;
+    todas = todas.concat(r.data);
+    if (r.data.length < limite) break;
+    offset += limite;
+  }
+  return todas;
 }
 async function getCliente(id) {
   var r = await sb.from('clientes').select('*').eq('id', id).single();
