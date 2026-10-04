@@ -205,8 +205,20 @@ async function removeCliente(id) {
 
 // ===== OBRAS =====
 async function getObras() {
-  var r = await sb.from('obras').select('*').order('created_at', { ascending: false });
-  return r.data || [];
+  var todas = [];
+  var offset = 0;
+  var limite = 1000;
+  while (true) {
+    var r = await sb.from('obras').select('*')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limite - 1);
+    if (!r.data || r.data.length === 0) break;
+    todas = todas.concat(r.data);
+    if (r.data.length < limite) break;
+    offset += limite;
+  }
+  return todas;
+}
 }
 async function getObra(id) {
   var r = await sb.from('obras').select('*').eq('id', id).single();
