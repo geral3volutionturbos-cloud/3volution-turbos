@@ -219,7 +219,7 @@ async function getObras() {
   }
   return todas;
 }
-}
+
 async function getObra(id) {
   var r = await sb.from('obras').select('*').eq('id', id).single();
   return r.data;
