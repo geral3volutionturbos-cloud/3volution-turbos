@@ -714,19 +714,19 @@ async function renderPesquisar(m, filtroEstado) {
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
     '<div class="card">' +
-      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()">' +
+      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()" value="' + (filtrosPesquisa.busca || '') + '">' +
       '<label class="filtro-label">Estado da obra</label>' +
       '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
-  ESTADOS.map(function(e) { return '<option' + (filtroEstado === e ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
-'</select>' +
+        ESTADOS.map(function(e) { return '<option' + ((filtroEstado === e || filtrosPesquisa.estado === e) ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
+      '</select>' +
       '<label class="filtro-label">Categoria</label>' +
       '<select id="p-cat" onchange="filtrar()"><option value="">Todas as categorias</option>' +
-        CATEGORIAS.map(function(c) { return '<option>' + c + '</option>'; }).join('') +
+        CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
       '</select>' +
       '<label class="filtro-label">Período (data de receção)</label>' +
       '<div class="filtros-data">' +
-        '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()"></div>' +
-        '<div><span class="filtro-label">Até</span><input id="p-fim" type="date" onchange="filtrar()"></div>' +
+        '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.ini || '') + '"></div>' +
+        '<div><span class="filtro-label">Até</span><input id="p-fim" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.fim || '') + '"></div>' +
       '</div>' +
       '<button class="btn btn-sec" style="margin-top:12px;margin-bottom:0" onclick="limparFiltros()">Limpar filtros</button>' +
     '</div>' +
@@ -743,27 +743,18 @@ function normalizarNumero(t) {
 
 function filtrar() {
   var b = (document.getElementById('p-busca').value || '').toLowerCase();
-  var bNum = normalizarNumero(b);
   var e = document.getElementById('p-estado').value;
   var c = document.getElementById('p-cat').value;
   var ini = document.getElementById('p-ini').value;
   var fim = document.getElementById('p-fim').value;
+
+  // Guardar filtros
+  filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim };
+
   var res = (window._todasObras || []).filter(function(o) {
-    var telNorm = normalizarNumero(o.cliente_telefone || '');
-    var nifNorm = normalizarNumero(o.cliente_nif || '');
-    var matNorm = normalizarNumero(o.matricula || '');
-
-    var mb = !b || 
-      o.numero.toLowerCase().indexOf(b) !== -1 || 
-      o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
-      (o.cliente_telefone||'').toLowerCase().indexOf(b) !== -1 ||
-      telNorm.indexOf(bNum) !== -1 ||
-      nifNorm.indexOf(bNum) !== -1 ||
-      matNorm.toLowerCase().indexOf(bNum) !== -1 ||
-      (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
-      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || 
-      (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
-
+    var mb = !b || o.numero.toLowerCase().indexOf(b) !== -1 || o.cliente_nome.toLowerCase().indexOf(b) !== -1 ||
+      (o.cliente_telefone||'').indexOf(b) !== -1 || (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
+      (o.veiculo||'').toLowerCase().indexOf(b) !== -1 || (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
     var me = !e || o.estado === e;
     var mc = !c || o.categoria === c;
     var mi = !ini || o.data_recebido >= ini;
@@ -776,6 +767,7 @@ function filtrar() {
   
 
 function limparFiltros() {
+  filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '' };
   document.getElementById('p-busca').value = '';
   document.getElementById('p-estado').value = '';
   document.getElementById('p-cat').value = '';
