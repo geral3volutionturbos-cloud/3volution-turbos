@@ -396,11 +396,13 @@ async function sair() {
 async function renderInicio(m) {
   var obras = await getObras();
   var h = hoje();
-  var s = {
+var s = {
     recebidos: obras.filter(function(o){ return o.estado === 'Recebido'; }).length,
     reparacao: obras.filter(function(o){ return o.estado === 'Em reparação'; }).length,
     prontos: obras.filter(function(o){ return o.estado === 'Pronto'; }).length,
-    entregues: obras.filter(function(o){ return o.estado === 'Entregue' && o.data_entrega === h; }).length
+    entregues: obras.filter(function(o){ return o.estado === 'Entregue' && o.data_entrega === h; }).length,
+    total: obras.length,
+    totalEntregues: obras.filter(function(o){ return o.estado === 'Entregue'; }).length
   };
   var recentes = obras.slice(0,3);
   m.innerHTML =
