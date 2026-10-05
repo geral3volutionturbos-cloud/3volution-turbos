@@ -326,7 +326,12 @@ function toggleDrawer() {
   document.getElementById('drawer').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('show');
 }
+var paginaAnterior = 'inicio';
+
 function nav(pagina, extra) {
+  if (pagina !== 'obra') {
+    paginaAnterior = pagina;
+  }
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   ['inicio','nova','pesquisar'].forEach(function(p) {
