@@ -327,6 +327,7 @@ function toggleDrawer() {
   document.getElementById('overlay').classList.toggle('show');
 }
 var paginaAnterior = 'inicio';
+var filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '' };
 
 function nav(pagina, extra) {
   if (pagina !== 'obra') {
