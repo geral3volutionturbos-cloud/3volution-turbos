@@ -417,7 +417,10 @@ function cardObra(o) {
 async function renderNova(m) {
   var clientes = await getClientes();
   m.innerHTML =
-    '<h2 style="margin-bottom:16px">Nova folha de obra</h2>' +
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(paginaAnterior)">←</button>' +
+      '<div class="info"><div class="tag">NOVA OBRA</div><div class="num">Criar folha</div></div>' +
+    '</div>' +
     '<label>Cliente *</label>' +
     '<div class="autocomplete">' +
       '<input id="f-cliente-busca" placeholder="Escreve para procurar..." oninput="procurarCliente(this.value)" onfocus="procurarCliente(this.value)" autocomplete="off">' +
@@ -647,10 +650,51 @@ async function editarObra(id) {
 async function guardarEdicao(id) {
   var novoEstado = document.getElementById('e-estado').value;
   var novaDataEntrega = document.getElementById('e-data').value || null;
-  // Se o estado não é Entregue, limpa a data de entrega
   if (novoEstado !== 'Entregue') {
     novaDataEntrega = null;
   }
+  var dados = {
+    cliente_nome: document.getElementById('e-nome').value,
+    cliente_telefone: document.getElementById('e-tel').value,
+    cliente_nif: document.getElementById('e-nif').value,
+    categoria: document.getElementById('e-cat').value,
+    veiculo: document.getElementById('e-veic').value,
+    matricula: document.getElementById('e-mat').value,
+    motorizacao: document.getElementById('e-mot').value,
+    ref_turbo: document.getElementById('e-ref').value,
+    data_entrega: novaDataEntrega,
+    estado: novoEstado,
+    valor_total: Number(document.getElementById('e-valor').value) || 0,
+    valor_pago: Number(document.getElementById('e-pago').value) || 0,
+    notas_pagamento: document.getElementById('e-notas-pag').value,
+    notas: document.getElementById('e-notas').value
+  };
+  var dataRec = document.getElementById('e-data-rec');
+  if (dataRec) dados.data_recebido = dataRec.value || null;
+  await updateObra(id, dados);
+  nav('obra', id);
+}
+  var dados = {
+    cliente_nome: document.getElementById('e-nome').value,
+    cliente_telefone: document.getElementById('e-tel').value,
+    cliente_nif: document.getElementById('e-nif').value,
+    categoria: document.getElementById('e-cat').value,
+    veiculo: document.getElementById('e-veic').value,
+    matricula: document.getElementById('e-mat').value,
+    motorizacao: document.getElementById('e-mot').value,
+    ref_turbo: document.getElementById('e-ref').value,
+    data_entrega: novaDataEntrega,
+    estado: novoEstado,
+    valor_total: Number(document.getElementById('e-valor').value) || 0,
+    valor_pago: Number(document.getElementById('e-pago').value) || 0,
+    notas_pagamento: document.getElementById('e-notas-pag').value,
+    notas: document.getElementById('e-notas').value
+  };
+  var dataRec = document.getElementById('e-data-rec');
+  if (dataRec) dados.data_recebido = dataRec.value || null;
+  await updateObra(id, dados);
+  nav('obra', id);
+}
   await updateObra(id, {
     cliente_nome: document.getElementById('e-nome').value,
     cliente_telefone: document.getElementById('e-tel').value,
@@ -733,8 +777,9 @@ function limparFiltros() {
 async function renderClientesLista(m) {
   var clientes = await getClientes();
   m.innerHTML =
-    '<div class="linha" style="margin-bottom:16px">' +
-      '<h2>Clientes</h2>' +
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'inicio\')">←</button>' +
+      '<div class="info"><div class="tag">CLIENTES</div><div class="num">Lista</div></div>' +
       '<button class="btn btn-primary btn-pequeno" onclick="nav(\'cliente-editar\', \'novo\')">➕ Novo</button>' +
     '</div>' +
     '<input placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value)">' +
@@ -867,7 +912,10 @@ function filtrarClientes(txt) {
 // ===== DEFINIÇÕES =====
 async function renderDefinicoes(m) {
   m.innerHTML =
-    '<h2 style="margin-bottom:16px">Definições</h2>' +
+    '<div class="cabecalho-obra">' +
+      '<button class="voltar" onclick="nav(\'inicio\')">←</button>' +
+      '<div class="info"><div class="tag">DEFINIÇÕES</div><div class="num">Conta</div></div>' +
+    '</div>' +
     '<div class="card">' +
       '<div class="muted small">Email da conta</div>' +
       '<div style="font-weight:600">' + (userAtual ? userAtual.email : '—') + '</div>' +
@@ -896,6 +944,10 @@ async function mudarPassword() {
 // ===== RELATÓRIOS =====
 async function renderRelatorios(m) {
   var obras = await getObras();
+  var cabecalho = '<div class="cabecalho-obra">' +
+    '<button class="voltar" onclick="nav(\'inicio\')">←</button>' +
+    '<div class="info"><div class="tag">RELATÓRIOS</div><div class="num">Análise</div></div>' +
+  '</div>';
   var anoAtual = new Date().getFullYear();
   var totalPago = 0, totalDividaEntregues = 0;
   var obrasEntreguesSemPagar = [];
@@ -948,7 +1000,7 @@ obras.forEach(function(o) {
   var clientes = Object.keys(porCliente).sort(function(a, b) { return porCliente[b].pago - porCliente[a].pago; });
 
   m.innerHTML =
-    '<h2 style="margin-bottom:16px">📊 Relatórios</h2>' +
+    cabecalho +
     '<div class="card"><h3 style="margin-top:0">Totais gerais</h3><div class="grid-info">' +
       '<div class="campo-info"><div class="lbl">Total recebido</div><div class="val" style="color:#86efac">' + fmtMoeda(totalPago) + '</div></div>' +
       '<div class="campo-info"><div class="lbl">Total em dívida</div><div class="val" style="color:#fca5a5">' + fmtMoeda(totalDividaEntregues) + '</div></div>' +
