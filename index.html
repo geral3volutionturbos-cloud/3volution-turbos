@@ -190,6 +190,10 @@ async function getObras() {
   }
   return todas;
 }
+  async function getClientes() {
+  var r = await sb.from('clientes').select('*').order('nome');
+  return r.data || [];
+}
 async function getCliente(id) {
   var r = await sb.from('clientes').select('*').eq('id', id).single();
   return r.data;
