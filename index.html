@@ -918,13 +918,14 @@ obras.forEach(function(o) {
   porMes[mes].obras++;
 });
   var porAno = {};
-  obras.forEach(function(o) {
-    if (!o.data_recebido) return;
-    var ano = o.data_recebido.slice(0, 4);
-    if (!porAno[ano]) porAno[ano] = { recebido: 0, obras: 0 };
-    porAno[ano].recebido += Number(o.valor_pago || 0);
-    porAno[ano].obras++;
-  });
+obras.forEach(function(o) {
+  var dataBase = o.data_entrega || o.data_recebido;
+  if (!dataBase) return;
+  var ano = dataBase.slice(0, 4);
+  if (!porAno[ano]) porAno[ano] = { recebido: 0, obras: 0 };
+  porAno[ano].recebido += Number(o.valor_pago || 0);
+  porAno[ano].obras++;
+});
   var anos = Object.keys(porAno).sort().reverse();
   var porCliente = {};
   obras.forEach(function(o) {
