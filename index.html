@@ -634,7 +634,9 @@ async function editarObra(id) {
       '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
       '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
       '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
-      '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + (o.data_recebido||'') + '">' +      '<label>Estado</label><select id="e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
+      '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + (o.data_recebido||'') + '">' +
+      '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
+      '<label>Estado</label><select id="e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
       '<label>Valor total (€)</label><input id="e-valor" type="number" step="0.01" value="' + (o.valor_total||'') + '">' +
       '<label>Valor pago (€)</label><input id="e-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '">' +
       '<label>Notas de pagamento</label><textarea id="e-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
