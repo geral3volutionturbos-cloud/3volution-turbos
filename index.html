@@ -908,14 +908,15 @@ async function renderRelatorios(m) {
   var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var porMes = [];
   for (var i = 0; i < 12; i++) porMes.push({ recebido: 0, obras: 0 });
-  obras.forEach(function(o) {
-    if (!o.data_recebido) return;
-    var d = new Date(o.data_recebido + 'T00:00:00');
-    if (d.getFullYear() !== anoAtual) return;
-    var mes = d.getMonth();
-    porMes[mes].recebido += Number(o.valor_pago || 0);
-    porMes[mes].obras++;
-  });
+obras.forEach(function(o) {
+  var dataBase = o.data_entrega || o.data_recebido;
+  if (!dataBase) return;
+  var d = new Date(dataBase + 'T00:00:00');
+  if (d.getFullYear() !== anoAtual) return;
+  var mes = d.getMonth();
+  porMes[mes].recebido += Number(o.valor_pago || 0);
+  porMes[mes].obras++;
+});
   var porAno = {};
   obras.forEach(function(o) {
     if (!o.data_recebido) return;
