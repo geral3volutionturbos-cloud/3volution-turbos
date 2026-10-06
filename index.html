@@ -550,7 +550,7 @@ async function renderObra(m, id) {
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(paginaAnterior)">←' +
-      '<div style="flex:1"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + '</div></div>' +
+      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + '</div></div>' +
       '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span>' +
     '</div>' +
     '<div class="card">' +
