@@ -605,7 +605,12 @@ async function apagarFoto(id, obraId) {
 
 async function mudarEstado(id, estado) {
   var o = await getObra(id);
-  var data_entrega = estado === 'Entregue' ? hoje() : o.data_entrega;
+  var data_entrega;
+  if (estado === 'Entregue') {
+    data_entrega = o.data_entrega || hoje();
+  } else {
+    data_entrega = null;  // se não é entregue, apaga a data
+  }
   await updateObra(id, { estado: estado, data_entrega: data_entrega });
   renderObra(document.getElementById('main'), id);
 }
@@ -627,8 +632,7 @@ async function editarObra(id) {
       '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
       '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
       '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
-      '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
-      '<label>Estado</label><select id="e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
+      '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + (o.data_recebido||'') + '">' +      '<label>Estado</label><select id="e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
       '<label>Valor total (€)</label><input id="e-valor" type="number" step="0.01" value="' + (o.valor_total||'') + '">' +
       '<label>Valor pago (€)</label><input id="e-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '">' +
       '<label>Notas de pagamento</label><textarea id="e-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
@@ -641,6 +645,12 @@ async function editarObra(id) {
 }
 
 async function guardarEdicao(id) {
+  var novoEstado = document.getElementById('e-estado').value;
+  var novaDataEntrega = document.getElementById('e-data').value || null;
+  // Se o estado não é Entregue, limpa a data de entrega
+  if (novoEstado !== 'Entregue') {
+    novaDataEntrega = null;
+  }
   await updateObra(id, {
     cliente_nome: document.getElementById('e-nome').value,
     cliente_telefone: document.getElementById('e-tel').value,
@@ -650,8 +660,9 @@ async function guardarEdicao(id) {
     matricula: document.getElementById('e-mat').value,
     motorizacao: document.getElementById('e-mot').value,
     ref_turbo: document.getElementById('e-ref').value,
-    data_entrega: document.getElementById('e-data').value || null,
-    estado: document.getElementById('e-estado').value,
+    data_recebido: document.getElementById('e-data-rec').value || null,
+    data_entrega: novaDataEntrega,
+    estado: novoEstado,
     valor_total: Number(document.getElementById('e-valor').value) || 0,
     valor_pago: Number(document.getElementById('e-pago').value) || 0,
     notas_pagamento: document.getElementById('e-notas-pag').value,
