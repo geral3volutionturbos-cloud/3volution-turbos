@@ -442,31 +442,6 @@ async function renderInicio(m) {
     '<div class="linha"><h3>Obras recentes</h3><a class="muted small" onclick="nav(\'clientes\')" style="cursor:pointer">Ver todas</a></div>' +
     (recentes.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
 }
-  var recentes = obras.slice(0,3);
-  m.innerHTML =
-    '<div class="destaque">' +
-      '<p class="tag">OFICINA</p>' +
-      '<h2>Gestão de turbos</h2>' +
-      '<span class="icone">🔧</span>' +
-      '<p>Obras, clientes, fotografias e estado do trabalho num só local.</p>' +
-    '</div>' +
-    '<div class="grid2">' +
-      '<div class="stat" onclick="nav(\'pesquisar\',\'Recebido\')" style="cursor:pointer"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
-      '<div class="stat" onclick="nav(\'pesquisar\',\'Em reparação\')" style="cursor:pointer"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
-      '<div class="stat" onclick="nav(\'pesquisar\',\'Pronto\')" style="cursor:pointer"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
-      '<div class="stat" onclick="nav(\'pesquisar\',\'Entregue\')" style="cursor:pointer"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
-    '</div>' +
-    '<div class="grid2">' +
-      '<div class="stat"><div class="num">' + s.total + '</div><div class="lbl">Total obras</div></div>' +
-      '<div class="stat"><div class="num">' + s.totalEntregues + '</div><div class="lbl">Total entregues</div></div>' +
-      '<div class="stat"><div class="num">' + s.totalEmDivida + '</div><div class="lbl">Em dívida</div></div>' +
-      '<div class="stat"><div class="num">' + s.faturacao + ' €</div><div class="lbl">Faturação</div></div>' +
-    '</div>' +
-    '<button class="btn btn-primary" onclick="nav(\'nova\')">📋 Nova folha de obra</button>' +
-    '<button class="btn btn-sec" onclick="nav(\'pesquisar\')">🔍 Pesquisa rápida</button>' +
-    '<div class="linha"><h3>Obras recentes</h3><a class="muted small" onclick="nav(\'clientes\')" style="cursor:pointer">Ver todas</a></div>' +
-    (recentes.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
-}
 
 function cardObra(o) {
   var pag = estadoPagamento(o);
