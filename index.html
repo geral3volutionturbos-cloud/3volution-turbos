@@ -976,16 +976,60 @@ async function mudarPassword() {
 }
 
 // ===== RELATÓRIOS =====
+var filtroRelatorio = 'ano';
+
 async function renderRelatorios(m) {
   var obras = await getObras();
+  var agora = new Date();
+  var anoAtual = agora.getFullYear();
+  var mesAtual = agora.getMonth();
+
   var cabecalho = '<div class="cabecalho-obra">' +
     '<button class="voltar" onclick="nav(\'inicio\')">←</button>' +
     '<div class="info"><div class="tag">RELATÓRIOS</div><div class="num">Análise</div></div>' +
   '</div>';
-  var anoAtual = new Date().getFullYear();
+
+  // Filtros por período
+  var filtros = [
+    { id: 'mes', label: 'Mês atual' },
+    { id: '3m', label: '3 meses' },
+    { id: 'ano', label: 'Ano' },
+    { id: 'anoAnt', label: 'Ano anterior' },
+    { id: 'tudo', label: 'Tudo' }
+  ];
+
+  var obrasFiltradas = obras;
+  var anoFiltro = anoAtual;
+
+  if (filtroRelatorio === 'mes') {
+    obrasFiltradas = obras.filter(function(o) {
+      if (!o.data_entrega) return false;
+      var d = new Date(o.data_entrega + 'T00:00:00');
+      return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
+    });
+  } else if (filtroRelatorio === '3m') {
+    var tresMesesAtras = new Date(anoAtual, mesAtual - 2, 1);
+    obrasFiltradas = obras.filter(function(o) {
+      if (!o.data_entrega) return false;
+      return new Date(o.data_entrega + 'T00:00:00') >= tresMesesAtras;
+    });
+  } else if (filtroRelatorio === 'ano') {
+    obrasFiltradas = obras.filter(function(o) {
+      if (!o.data_entrega) return false;
+      return new Date(o.data_entrega + 'T00:00:00').getFullYear() === anoAtual;
+    });
+  } else if (filtroRelatorio === 'anoAnt') {
+    anoFiltro = anoAtual - 1;
+    obrasFiltradas = obras.filter(function(o) {
+      if (!o.data_entrega) return false;
+      return new Date(o.data_entrega + 'T00:00:00').getFullYear() === anoFiltro;
+    });
+  }
+
+  // Totais
   var totalPago = 0, totalDividaEntregues = 0;
   var obrasEntreguesSemPagar = [];
-  obras.forEach(function(o) {
+  obrasFiltradas.forEach(function(o) {
     var t = Number(o.valor_total || 0);
     var p = Number(o.valor_pago || 0);
     totalPago += p;
@@ -994,38 +1038,55 @@ async function renderRelatorios(m) {
       obrasEntreguesSemPagar.push(o);
     }
   });
+
+  // Devedores (sempre todas as obras, não filtrado)
   var devedores = {};
-  obrasEntreguesSemPagar.forEach(function(o) {
+  obras.forEach(function(o) {
+    if (o.estado !== 'Entregue') return;
+    var t = Number(o.valor_total || 0);
+    var p = Number(o.valor_pago || 0);
+    if ((t - p) <= 0.01) return;
     var k = o.cliente_nome || '—';
     if (!devedores[k]) devedores[k] = { divida: 0, obras: [], telefone: o.cliente_telefone };
-    devedores[k].divida += (Number(o.valor_total || 0) - Number(o.valor_pago || 0));
+    devedores[k].divida += (t - p);
     devedores[k].obras.push(o);
   });
   var listaDevedores = Object.keys(devedores).sort(function(a, b) { return devedores[b].divida - devedores[a].divida; });
+
+  // Por mês (do ano do filtro)
   var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var porMes = [];
   for (var i = 0; i < 12; i++) porMes.push({ recebido: 0, obras: 0 });
-obras.forEach(function(o) {
-  var dataBase = o.data_entrega || o.data_recebido;
-  if (!dataBase) return;
-  var d = new Date(dataBase + 'T00:00:00');
-  if (d.getFullYear() !== anoAtual) return;
-  var mes = d.getMonth();
-  porMes[mes].recebido += Number(o.valor_pago || 0);
-  porMes[mes].obras++;
-});
-  var porAno = {};
-obras.forEach(function(o) {
-  var dataBase = o.data_entrega || o.data_recebido;
-  if (!dataBase) return;
-  var ano = dataBase.slice(0, 4);
-  if (!porAno[ano]) porAno[ano] = { recebido: 0, obras: 0 };
-  porAno[ano].recebido += Number(o.valor_pago || 0);
-  porAno[ano].obras++;
-});
-  var anos = Object.keys(porAno).sort().reverse();
-  var porCliente = {};
   obras.forEach(function(o) {
+    if (!o.data_entrega) return;
+    var d = new Date(o.data_entrega + 'T00:00:00');
+    if (d.getFullYear() !== anoFiltro) return;
+    var mes = d.getMonth();
+    porMes[mes].recebido += Number(o.valor_pago || 0);
+    porMes[mes].obras++;
+  });
+
+  // Por ano (adapta ao filtro)
+  var porAno = {};
+  var obrasAno = obras;
+  if (filtroRelatorio === 'mes' || filtroRelatorio === '3m') {
+    obrasAno = obras.filter(function(o) {
+      if (!o.data_entrega) return false;
+      return new Date(o.data_entrega + 'T00:00:00').getFullYear() === anoAtual;
+    });
+  }
+  obrasAno.forEach(function(o) {
+    if (!o.data_entrega) return;
+    var ano = o.data_entrega.slice(0, 4);
+    if (!porAno[ano]) porAno[ano] = { recebido: 0, obras: 0 };
+    porAno[ano].recebido += Number(o.valor_pago || 0);
+    porAno[ano].obras++;
+  });
+  var anos = Object.keys(porAno).sort().reverse();
+
+  // Por cliente (filtrado)
+  var porCliente = {};
+  obrasFiltradas.forEach(function(o) {
     var k = o.cliente_nome || '—';
     if (!porCliente[k]) porCliente[k] = { pago: 0, obras: 0 };
     porCliente[k].pago += Number(o.valor_pago || 0);
@@ -1035,13 +1096,19 @@ obras.forEach(function(o) {
 
   m.innerHTML =
     cabecalho +
-    '<div class="card"><h3 style="margin-top:0">Totais gerais</h3><div class="grid-info">' +
+    '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px">' +
+      filtros.map(function(f) {
+        var ativo = filtroRelatorio === f.id;
+        return '<button onclick="mudarFiltroRelatorio(\'' + f.id + '\')" style="padding:8px 14px;border-radius:10px;border:1px solid ' + (ativo ? '#e11d2e' : '#262626') + ';background:' + (ativo ? '#e11d2e' : '#141414') + ';color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0">' + f.label + '</button>';
+      }).join('') +
+    '</div>' +
+    '<div class="card"><h3 style="margin-top:0">Totais</h3><div class="grid-info">' +
       '<div class="campo-info"><div class="lbl">Total recebido</div><div class="val" style="color:#86efac">' + fmtMoeda(totalPago) + '</div></div>' +
       '<div class="campo-info"><div class="lbl">Total em dívida</div><div class="val" style="color:#fca5a5">' + fmtMoeda(totalDividaEntregues) + '</div></div>' +
-      '<div class="campo-info"><div class="lbl">Nº de obras</div><div class="val">' + obras.length + '</div></div>' +
+      '<div class="campo-info"><div class="lbl">Nº de obras</div><div class="val">' + obrasFiltradas.length + '</div></div>' +
       '<div class="campo-info"><div class="lbl">Clientes em dívida</div><div class="val" style="color:#fca5a5">' + listaDevedores.length + '</div></div>' +
     '</div></div>' +
-    '<div class="card" style="border-color:#991b1b"><h3 style="margin-top:0;color:#fca5a5">💸 Devedores</h3>' +
+    '<div class="card" style="border-color:#991b1b"><h3 style="margin-top:0;color:#fca5a5">💸 Devedores (histórico)</h3>' +
       (listaDevedores.length ? listaDevedores.map(function(c) {
         var d = devedores[c];
         return '<div style="padding:12px 0;border-bottom:1px solid #262626;cursor:pointer" onclick="abrirObrasDevedor(\'' + c.replace(/'/g, "\\'") + '\')">' +
@@ -1051,7 +1118,7 @@ obras.forEach(function(o) {
         '</div>';
       }).join('') : '<p class="muted small">Ninguém em dívida. 🎉</p>') +
     '</div>' +
-    '<div class="card"><h3 style="margin-top:0">Recebido por mês (' + anoAtual + ')</h3>' +
+    '<div class="card"><h3 style="margin-top:0">Recebido por mês (' + anoFiltro + ')</h3>' +
       meses.map(function(nome, idx) {
         var d = porMes[idx];
         if (d.obras === 0 && d.recebido === 0) return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626;color:#6b7280"><span>' + nome + '</span><span>—</span></div>';
@@ -1065,11 +1132,17 @@ obras.forEach(function(o) {
       }).join('') : '<p class="muted small">Sem dados.</p>') +
     '</div>' +
     '<div class="card"><h3 style="margin-top:0">Recebido por cliente</h3>' +
-      (clientes.length ? clientes.map(function(c) {
+      (clientes.length ? clientes.slice(0, 30).map(function(c) {
         var d = porCliente[c];
         return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #262626"><span><strong>' + c + '</strong> <span class="muted small">(' + d.obras + ')</span></span><span style="color:#86efac">' + fmtMoeda(d.pago) + '</span></div>';
       }).join('') : '<p class="muted small">Sem dados.</p>') +
+      (clientes.length > 30 ? '<p class="muted small" style="text-align:center;margin-top:8px">... e mais ' + (clientes.length - 30) + ' clientes</p>' : '') +
     '</div>';
+}
+
+function mudarFiltroRelatorio(id) {
+  filtroRelatorio = id;
+  renderRelatorios(document.getElementById('main'));
 }
 
 // ===== OBRAS DEVEDOR =====
