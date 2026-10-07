@@ -364,16 +364,84 @@ async function sair() {
 async function renderInicio(m) {
   var obras = await getObras();
   var h = hoje();
+  var agora = new Date();
+  var anoAtual = agora.getFullYear();
+  var mesAtual = agora.getMonth(); // 0-11
+  var mesAnt = mesAtual === 0 ? 11 : mesAtual - 1;
+  var anoMesAnt = mesAtual === 0 ? anoAtual - 1 : anoAtual;
+
+  // Filtros
+  var obrasMes = obras.filter(function(o) {
+    if (!o.data_entrega) return false;
+    var d = new Date(o.data_entrega + 'T00:00:00');
+    return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
+  });
+  var obrasMesAnt = obras.filter(function(o) {
+    if (!o.data_entrega) return false;
+    var d = new Date(o.data_entrega + 'T00:00:00');
+    return d.getFullYear() === anoMesAnt && d.getMonth() === mesAnt;
+  });
+
+  var faturacaoMes = obrasMes.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
+  var faturacaoMesAnt = obrasMesAnt.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
+
+  // Variação
+  var variacaoValor = faturacaoMes - faturacaoMesAnt;
+  var variacaoPct = faturacaoMesAnt > 0 ? Math.round((variacaoValor / faturacaoMesAnt) * 100) : 0;
+  var variacaoTexto = '';
+  var variacaoCor = '#9ca3af';
+  if (faturacaoMesAnt === 0 && faturacaoMes > 0) {
+    variacaoTexto = '↑ ' + fmtMoeda(faturacaoMes) + ' (novo)';
+    variacaoCor = '#86efac';
+  } else if (faturacaoMesAnt === 0 && faturacaoMes === 0) {
+    variacaoTexto = '—';
+  } else if (variacaoValor > 0) {
+    variacaoTexto = '↑ ' + fmtMoeda(variacaoValor) + ' (+' + variacaoPct + '%)';
+    variacaoCor = '#86efac';
+  } else if (variacaoValor < 0) {
+    variacaoTexto = '↓ ' + fmtMoeda(Math.abs(variacaoValor)) + ' (' + variacaoPct + '%)';
+    variacaoCor = '#fca5a5';
+  } else {
+    variacaoTexto = '= 0 €';
+  }
+
   var s = {
     recebidos: obras.filter(function(o){ return o.estado === 'Recebido'; }).length,
     reparacao: obras.filter(function(o){ return o.estado === 'Em reparação'; }).length,
     prontos: obras.filter(function(o){ return o.estado === 'Pronto'; }).length,
     entregues: obras.filter(function(o){ return o.estado === 'Entregue' && o.data_entrega === h; }).length,
-    total: obras.length,
-    totalEntregues: obras.filter(function(o){ return o.estado === 'Entregue'; }).length,
-    totalEmDivida: obras.filter(function(o){ return o.estado === 'Entregue' && Number(o.valor_pago||0) < Number(o.valor_total||0); }).length,
-    faturacao: obras.reduce(function(s, o){ return s + Number(o.valor_pago||0); }, 0).toFixed(0)
+    entreguesMes: obrasMes.length,
+    faturacaoMes: faturacaoMes,
+    faturacaoMesAnt: faturacaoMesAnt,
+    variacaoTexto: variacaoTexto,
+    variacaoCor: variacaoCor
   };
+
+  var recentes = obras.slice(0,3);
+  m.innerHTML =
+    '<div class="destaque">' +
+      '<p class="tag">OFICINA</p>' +
+      '<h2>Gestão de turbos</h2>' +
+      '<span class="icone">🔧</span>' +
+      '<p>Obras, clientes, fotografias e estado do trabalho num só local.</p>' +
+    '</div>' +
+    '<div class="grid2">' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Recebido\')" style="cursor:pointer"><div class="num">' + s.recebidos + '</div><div class="lbl">Recebidos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Em reparação\')" style="cursor:pointer"><div class="num">' + s.reparacao + '</div><div class="lbl">Em reparação</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Pronto\')" style="cursor:pointer"><div class="num">' + s.prontos + '</div><div class="lbl">Prontos</div></div>' +
+      '<div class="stat" onclick="nav(\'pesquisar\',\'Entregue\')" style="cursor:pointer"><div class="num">' + s.entregues + '</div><div class="lbl">Entregues hoje</div></div>' +
+    '</div>' +
+    '<div class="grid2">' +
+      '<div class="stat"><div class="num">' + s.entreguesMes + '</div><div class="lbl">Entregues este mês</div></div>' +
+      '<div class="stat"><div class="num">' + fmtMoeda(s.faturacaoMes) + '</div><div class="lbl">Faturação este mês</div></div>' +
+      '<div class="stat"><div class="num">' + fmtMoeda(s.faturacaoMesAnt) + '</div><div class="lbl">Faturação mês anterior</div></div>' +
+      '<div class="stat"><div class="num" style="color:' + s.variacaoCor + ';font-size:18px">' + s.variacaoTexto + '</div><div class="lbl">Variação</div></div>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="nav(\'nova\')">📋 Nova folha de obra</button>' +
+    '<button class="btn btn-sec" onclick="nav(\'pesquisar\')">🔍 Pesquisa rápida</button>' +
+    '<div class="linha"><h3>Obras recentes</h3><a class="muted small" onclick="nav(\'clientes\')" style="cursor:pointer">Ver todas</a></div>' +
+    (recentes.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
+}
   var recentes = obras.slice(0,3);
   m.innerHTML =
     '<div class="destaque">' +
