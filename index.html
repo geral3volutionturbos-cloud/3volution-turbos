@@ -237,7 +237,7 @@ async function gerarNumero() {
   var prox = nums.length ? Math.max.apply(null, nums) + 1 : 1;
   return 'OT-' + ano + '-' + String(prox).padStart(4, '0');
 }
-
+ 
 // ===== FOTOS =====
 async function getFotos(obraId, tipo) {
   var r = await sb.from('fotos').select('*').eq('obra_id', obraId).eq('tipo', tipo).order('created_at');
