@@ -537,7 +537,9 @@ function escolherCliente(id) {
   if (!c) return;
   document.getElementById('f-cliente-id').value = id;
   document.getElementById('f-cliente-busca').value = c.nome;
-  document.getElementById('f-tel').value = c.telefone || '';
+ document.getElementById('f-tel').value = c.telefone || '';
+var fTel2 = document.getElementById('f-tel2');
+if (fTel2) fTel2.value = c.telefone2 || '';
   document.getElementById('f-nif').value = c.nif || '';
   document.getElementById('f-cliente-lista').classList.remove('show');
 }
