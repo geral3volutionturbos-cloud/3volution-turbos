@@ -230,9 +230,12 @@ async function removeObra(id) {
 async function gerarNumero() {
   var ano = new Date().getFullYear();
   var r = await sb.from('obras').select('numero');
-  var nums = (r.data || []).map(function(o){ return Number((o.numero||'').split('-')[2]); }).filter(function(n){ return !isNaN(n); });
+  var nums = (r.data || [])
+    .filter(function(o) { return o.numero && o.numero.indexOf('OT-') === 0; })
+    .map(function(o) { return Number(o.numero.split('-')[2]); })
+    .filter(function(n) { return !isNaN(n); });
   var prox = nums.length ? Math.max.apply(null, nums) + 1 : 1;
-  return 'OT-' + ano + '-' + String(prox).padStart(4,'0');
+  return 'OT-' + ano + '-' + String(prox).padStart(4, '0');
 }
 
 // ===== FOTOS =====
