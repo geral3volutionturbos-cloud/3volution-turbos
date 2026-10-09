@@ -548,6 +548,7 @@ async function guardarNova() {
   var clienteId = document.getElementById('f-cliente-id').value;
   var clienteNome = document.getElementById('f-cliente-busca').value.trim();
   var clienteTelefone = document.getElementById('f-tel').value.trim();
+  var clienteTelefone2 = document.getElementById('f-tel2').value.trim();
 
   // Se não tem nome, usa o telefone
   if (!clienteNome) {
@@ -564,6 +565,7 @@ async function guardarNova() {
     cliente_id: clienteId || null,
     cliente_nome: clienteNome,
     cliente_telefone: clienteTelefone,
+    cliente_telefone2: clienteTelefone2,
     cliente_nif: document.getElementById('f-nif').value,
     categoria: document.getElementById('f-cat').value,
     veiculo: document.getElementById('f-veic').value,
