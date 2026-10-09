@@ -713,6 +713,7 @@ async function editarObra(id) {
     '<div class="card">' +
       '<label>Nome do cliente</label><input id="e-nome" value="' + (o.cliente_nome||'') + '">' +
       '<label>Telefone</label><input id="e-tel" value="' + (o.cliente_telefone||'') + '">' +
+'<label>Telefone 2</label><input id="e-tel2" value="' + (o.cliente_telefone2||'') + '">' +
       '<label>NIF</label><input id="e-nif" value="' + (o.cliente_nif||'') + '">' +
       '<label>Categoria</label><select id="e-cat">' + CATEGORIAS.map(function(c){ return '<option ' + (o.categoria===c?'selected':'') + '>' + c + '</option>'; }).join('') + '</select>' +
       '<label>Veículo</label><input id="e-veic" value="' + (o.veiculo||'') + '">' +
