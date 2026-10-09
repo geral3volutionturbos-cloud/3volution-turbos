@@ -527,13 +527,23 @@ function escolherCliente(id) {
 async function guardarNova() {
   var clienteId = document.getElementById('f-cliente-id').value;
   var clienteNome = document.getElementById('f-cliente-busca').value.trim();
-  if (!clienteNome) { alert('Escolhe ou cria um cliente'); return; }
+  var clienteTelefone = document.getElementById('f-tel').value.trim();
+
+  // Se não tem nome, usa o telefone
+  if (!clienteNome) {
+    if (!clienteTelefone) {
+      alert('Preenche o nome ou o telefone do cliente');
+      return;
+    }
+    clienteNome = clienteTelefone;
+  }
+
   var numero = await gerarNumero();
   var nova = await addObra({
     numero: numero,
     cliente_id: clienteId || null,
     cliente_nome: clienteNome,
-    cliente_telefone: document.getElementById('f-tel').value,
+    cliente_telefone: clienteTelefone,
     cliente_nif: document.getElementById('f-nif').value,
     categoria: document.getElementById('f-cat').value,
     veiculo: document.getElementById('f-veic').value,
