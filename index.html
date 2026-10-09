@@ -881,10 +881,17 @@ function cardCliente(c) {
 }
 
 function filtrarClientesLista(txt) {
+  var t = (txt || '').toLowerCase();
+  var tNum = normalizarNumero(t);
   var clientes = (window._clientesCache2 || []).filter(function(c) {
-    return c.nome.toLowerCase().indexOf(txt.toLowerCase()) !== -1 ||
-      (c.telefone||'').indexOf(txt) !== -1 || (c.nif||'').indexOf(txt) !== -1 ||
-      (c.email||'').toLowerCase().indexOf(txt.toLowerCase()) !== -1;
+    var telNorm = normalizarNumero(c.telefone || '');
+    var tel2Norm = normalizarNumero(c.telefone2 || '');
+    var nifNorm = normalizarNumero(c.nif || '');
+    return c.nome.toLowerCase().indexOf(t) !== -1 ||
+      telNorm.indexOf(tNum) !== -1 ||
+      tel2Norm.indexOf(tNum) !== -1 ||
+      nifNorm.indexOf(tNum) !== -1 ||
+      (c.email||'').toLowerCase().indexOf(t) !== -1;
   });
   document.getElementById('cli-lista').innerHTML = clientes.map(cardCliente).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
 }
