@@ -991,7 +991,9 @@ async function renderClientes(m) {
 function filtrarClientes(txt) {
   var grupos = window._gruposCache || {};
   var filtrados = {};
-  Object.keys(grupos).forEach(function(k) { if (k.toLowerCase().indexOf(txt.toLowerCase()) !== -1) filtrados[k] = grupos[k]; });
+  Object.keys(grupos).forEach(function(k) {
+    if (k.toLowerCase().indexOf(txt.toLowerCase()) !== -1) filtrados[k] = grupos[k];
+  });
   var clientes = Object.keys(filtrados).sort();
   document.getElementById('c-lista').innerHTML = clientes.map(function(c) {
     return '<div style="margin-top:16px"><div class="linha"><strong>' + c + '</strong><span class="muted small">' + filtrados[c].length + ' obra(s)</span></div>' +
