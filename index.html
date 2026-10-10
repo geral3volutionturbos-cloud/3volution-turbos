@@ -764,38 +764,6 @@ async function guardarEdicao(id) {
   nav('obra', id);
 }
 
-
-async function guardarEdicao(id) {
-  var novoEstado = document.getElementById('e-estado').value;
-  var novaDataEntrega = document.getElementById('e-data').value || null;
-  if (novoEstado !== 'Entregue') {
-    novaDataEntrega = null;
-  }
-  var dados = {
-    cliente_nome: document.getElementById('e-nome').value,
-    cliente_telefone: document.getElementById('e-tel').value,
-cliente_telefone2: document.getElementById('e-tel2').value,
-    
-    cliente_nif: document.getElementById('e-nif').value,
-    categoria: document.getElementById('e-cat').value,
-    veiculo: document.getElementById('e-veic').value,
-    matricula: document.getElementById('e-mat').value,
-    motorizacao: document.getElementById('e-mot').value,
-    ref_turbo: document.getElementById('e-ref').value,
-    data_entrega: novaDataEntrega,
-    estado: novoEstado,
-    valor_total: Number(document.getElementById('e-valor').value) || 0,
-    valor_pago: Number(document.getElementById('e-pago').value) || 0,
-    notas_pagamento: document.getElementById('e-notas-pag').value,
-    notas: document.getElementById('e-notas').value
-  };
-  var dataRec = document.getElementById('e-data-rec');
-  if (dataRec) dados.data_recebido = dataRec.value || null;
-  await updateObra(id, dados);
-  nav('obra', id);
-}
-
-
 // ===== PESQUISAR =====
 async function renderPesquisar(m, filtroEstado) {
   m.innerHTML =
