@@ -281,6 +281,25 @@ async function removeCliente(id) {
 }
 
 // ===== OBRAS =====
+  
+// ===== VERIFICAR DUPLICADOS =====
+async function verificarDuplicado(dados) {
+  // Critério: telefone + notas + data_recebido (iguais)
+  var tel = (dados.cliente_telefone || '').trim();
+  var not = (dados.notas || '').trim();
+  var dat = (dados.data_recebido || '').trim();
+  if (!tel && !not) return [];   // sem telefone nem notas, não dá para verificar
+
+  var r = await sb.from('obras').select('*').eq('cliente_telefone', tel).eq('notas', not);
+  if (r.error || !r.data) return [];
+
+  // Filtra por data igual (null == null)
+  return r.data.filter(function(o) {
+    var odat = (o.data_recebido || '').trim();
+    return odat === dat;
+  });
+}
+  
 async function getObras() {
   var todas = [];
   var offset = 0;
@@ -609,10 +628,29 @@ if (fTel2) fTel2.value = c.telefone2 || '';
 }
 
 async function guardarNova() {
+async function guardarNova() {
   var clienteId = document.getElementById('f-cliente-id').value;
   var clienteNome = document.getElementById('f-cliente-busca').value.trim();
   var clienteTelefone = document.getElementById('f-tel').value.trim();
   var clienteTelefone2 = document.getElementById('f-tel2').value.trim();
+
+  // ===== VERIFICAR DUPLICADO =====
+  var telSep = separarTelefones(clienteTelefone);
+  var dadosVerif = {
+    cliente_telefone: telSep.tel1 || clienteTelefone,
+    notas: document.getElementById('f-notas').value.trim(),
+    data_recebido: hoje()
+  };
+  var duplicados = await verificarDuplicado(dadosVerif);
+  if (duplicados.length > 0) {
+    var msg = '⚠️ Já existe(m) ' + duplicados.length + ' obra(s) com os mesmos dados:\n\n';
+    duplicados.slice(0, 3).forEach(function(o) {
+      msg += '• ' + o.numero + ' — ' + o.cliente_nome + ' (' + (o.data_recebido || 'sem data') + ')\n';
+    });
+    if (duplicados.length > 3) msg += '... e mais ' + (duplicados.length - 3) + '.\n';
+    msg += '\nQueres criar de qualquer forma?';
+    if (!confirm(msg)) return;
+  }
 
   // Se não tem nome, usa o telefone
   if (!clienteNome) {
