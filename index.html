@@ -195,6 +195,71 @@ function estadoPagamento(o) {
   return { classe: 'divida', texto: '💰 Em dívida · ' + fmtMoeda(falta) };
 }
 
+  // ============================================
+// SEPARAR TELEFONES CORROMPIDOS
+// Recebe uma string e devolve { tel1, tel2, ref }
+// ============================================
+function pareceTelefoneValido(num) {
+  if (!num) return false;
+  var d = String(num).replace(/\D/g, '');
+  if (d.indexOf('351') === 0) d = d.substr(3);
+  else if (d.indexOf('34') === 0 || d.indexOf('33') === 0) d = d.substr(2);
+  if (d.length !== 9) return false;
+  var p = d.charAt(0);
+  return '23679'.indexOf(p) !== -1;
+}
+
+function separarTelefones(raw) {
+  if (!raw) return { tel1: '', tel2: '', ref: '' };
+  var t = String(raw).trim().replace(/\u202C/g, '').replace(/\u200E/g, '');
+
+  // Caso com vírgula explícita: "911526383, 919969563"
+  if (t.indexOf(',') >= 0) {
+    var p = t.split(',').map(function(x) { return x.trim(); }).filter(Boolean);
+    return { tel1: p[0] || '', tel2: p[1] || '', ref: p.slice(2).join(' ') };
+  }
+
+  // Sem dígitos = nome. Mantém como tel1.
+  if (!/\d/.test(t)) return { tel1: t, tel2: '', ref: '' };
+
+  var d = t.replace(/\D/g, '');
+  var nums = [];
+  var resto = d;
+
+  function extrair(s) {
+    if (s.length < 9) return null;
+    var cc = s.substr(0, 3);
+    var ccLen = 0;
+    if (cc === '351') ccLen = 3;
+    else if (s.substr(0, 2) === '34' || s.substr(0, 2) === '33') ccLen = 2;
+
+    if (ccLen > 0) {
+      var num = s.substr(ccLen, 9);
+      if (pareceTelefoneValido(num)) {
+        return { num: '+' + s.substr(0, ccLen) + num, resto: s.substr(ccLen + 9) };
+      }
+    }
+    // Sem indicativo → assume 9 dígitos PT
+    var num2 = s.substr(0, 9);
+    if (pareceTelefoneValido(num2)) {
+      return { num: num2, resto: s.substr(9) };
+    }
+    return null;
+  }
+
+  for (var i = 0; i < 2; i++) {
+    var r = extrair(resto);
+    if (!r) break;
+    nums.push(r.num);
+    resto = r.resto;
+  }
+
+  return {
+    tel1: nums[0] || '',
+    tel2: nums[1] || '',
+    ref: resto || ''
+  };
+}
 // ===== CLIENTES =====
 async function getClientes() {
   var r = await sb.from('clientes').select('*').order('nome');
