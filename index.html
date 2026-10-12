@@ -712,29 +712,30 @@ async function guardarNova() {
 }
 
 // ===== OBRA =====
+  
 async function renderObra(m, id) {
   var o = await getObra(id);
-  if (!o) { m.innerHTML = '<p class="muted">Obra não encont '</rada.</p>div'; return; }
-  var antes = await></ getdivFotos(id, 'antes');
- >' var depois = await getFotos(id, 'depois');
+  if (!o) { m.innerHTML = '<p class="muted">Obra nao encontrada.</p>'; return; }
+  var antes = await getFotos(id, 'antes');
+  var depois = await getFotos(id, 'depois');
   var pag = estadoPagamento(o);
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(paginaAnterior)">←</button>' +
-      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + +
+      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + '</div></div>' +
       '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span>' +
     '</div>' +
     (o.urgente || o.venda_web ?
       '<div style="margin-bottom:12px">' +
-        (o.urgente ? '<span class="badge-urgente" style="font-size:13px;padding:6px 12px">🔴 URGENTE</span> ' : '') +
-        (o.venda_web ? '<span class="badge-web" style="font-size:13px;padding:6px 12px">🌐 VENDA WEB</span>' : '') +
+        (o.urgente ? '<span class="badge-urgente" style="font-size:13px;padding:6px 12px">URGENTE</span> ' : '') +
+        (o.venda_web ? '<span class="badge-web" style="font-size:13px;padding:6px 12px">VENDA WEB</span>' : '') +
       '</div>' : '') +
     '<div class="card">' +
       '<div class="linha" style="margin-bottom:16px">' +
         '<h3 style="margin:0">' + o.cliente_nome + '</h3>' +
         (o.cliente_telefone ? '<div style="display:flex;gap:8px">' +
-  '<a href="tel:' + o.cliente_telefone + '" class="voltar" title="Ligar">📞</a>' +
-  '<a href="' + whatsappUrl(o.cliente_telefone) + '" target="_blank" class="voltar" title="WhatsApp">💬</a>' +
+  '<a href="tel:' + o.cliente_telefone + '" class="voltar" title="Ligar">Ligar</a>' +
+  '<a href="' + whatsappUrl(o.cliente_telefone) + '" target="_blank" class="voltar" title="WhatsApp">WhatsApp</a>' +
 '</div>' : '') +
       '</div>' +
       '<div class="grid-info">' +
@@ -744,9 +745,9 @@ async function renderObra(m, id) {
         campo('Categoria', o.categoria) +
         campo('Recebido', fmt(o.data_recebido)) +
         campo('Entregue', fmt(o.data_entrega)) +
-        campo('Veículo', o.veiculo) +
-        campo('Matrícula', o.matricula) +
-        campo('Motorização', o.motorizacao) +
+        campo('Veiculo', o.veiculo) +
+        campo('Matricula', o.matricula) +
+        campo('Motorizacao', o.motorizacao) +
         campo('Ref. turbo', o.ref_turbo) +
       '</div>' +
       (o.notas ? '<div style="margin-top:12px"><div class="muted small">Notas</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas + '</div></div>' : '') +
@@ -754,7 +755,7 @@ async function renderObra(m, id) {
       renderFotos(id, 'depois', depois) +
     '</div>' +
     '<div class="card">' +
-      '<h3 style="margin:0 0 12px">💰 Pagamento</h3>' +
+      '<h3 style="margin:0 0 12px">Pagamento</h3>' +
       '<div class="grid-info">' +
         campo('Valor total', fmtMoeda(o.valor_total)) +
         campo('Valor pago', fmtMoeda(o.valor_pago)) +
@@ -762,20 +763,20 @@ async function renderObra(m, id) {
       '<div style="margin:8px 0 12px"><span class="badge-pago ' + pag.classe + '" style="font-size:14px;padding:8px 16px">' + pag.texto + '</span></div>' +
       (o.notas_pagamento ? '<div style="margin-top:8px"><div class="muted small">Notas de pagamento</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas_pagamento + '</div></div>' : '') +
       '<div class="valor-linha" style="margin-top:16px">' +
-        '<div><label>Valor total (€)</label><input id="p-total" type="number" step="0.01" value="' + (o.valor_total||'') + '"></div>' +
-        '<div><label>Valor pago (€)</label><input id="p-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '"></div>' +
+        '<div><label>Valor total (EUR)</label><input id="p-total" type="number" step="0.01" value="' + (o.valor_total||'') + '"></div>' +
+        '<div><label>Valor pago (EUR)</label><input id="p-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '"></div>' +
       '</div>' +
       '<label>Notas de pagamento</label><textarea id="p-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
       '<div id="pag-msg" class="muted small" style="min-height:18px;margin-bottom:8px;text-align:center"></div>' +
       '<button class="btn btn-sec" onclick="guardarPagamento(\'' + id + '\')">Guardar pagamento</button>' +
     '</div>' +
     '<div class="card">' +
-      '<h3 style="margin:0 0 12px">🏷️ Marcações</h3>' +
+      '<h3 style="margin:0 0 12px">Marcacoes</h3>' +
       '<button class="toggle-urg ' + (o.urgente?'ativo':'') + '" onclick="toggleUrgente(\'' + id + '\',' + (!o.urgente) + ')">' +
-        (o.urgente ? '🔴 Urgente (clica para remover)' : '⚪ Marcar como urgente') +
+        (o.urgente ? 'Urgente - clica para remover' : 'Marcar como urgente') +
       '</button>' +
       '<button class="toggle-urg toggle-web ' + (o.venda_web?'ativo':'') + '" onclick="toggleVendaWeb(\'' + id + '\',' + (!o.venda_web) + ')">' +
-        (o.venda_web ? '🌐 Venda Web (clica para remover)' : '⚪ Marcar como venda web') +
+        (o.venda_web ? 'Venda Web - clica para remover' : 'Marcar como venda web') +
       '</button>' +
     '</div>' +
     '<div class="card">' +
@@ -784,8 +785,8 @@ async function renderObra(m, id) {
         ESTADOS.map(function(e) { return '<button class="' + (o.estado===e?'ativo':'') + '" onclick="mudarEstado(\'' + id + '\',\'' + e + '\')">' + e + '</button>'; }).join('') +
       '</div>' +
     '</div>' +
-    '<button class="btn btn-sec" onclick="editarObra(\'' + id + '\')">✏️ Editar obra</button>' +
-    '<button class="btn btn-perigo" onclick="apagarObra(\'' + id + '\')">🗑️ Apagar obra</button>';
+    '<button class="btn btn-sec" onclick="editarObra(\'' + id + '\')">Editar obra</button>' +
+    '<button class="btn btn-perigo" onclick="apagarObra(\'' + id + '\')">Apagar obra</button>';
 }
 
 function campo(lbl, val) {
