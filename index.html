@@ -568,11 +568,23 @@ async function renderInicio(m) {
 function cardObra(o) {
   var pag = estadoPagamento(o);
   var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
+  var badges = '';
+  if (o.urgente) badges += '<span class="badge-urgente">🔴 URGENTE</span>';
+  if (o.venda_web) badges += '<span class="badge-web">🌐 WEB</span>';
+  var descricao = '';
+  if (o.ref_turbo && o.ref_turbo.trim()) descricao = o.ref_turbo;
+  else if (o.notas && o.notas.trim()) descricao = o.notas.substring(0, 50);
+  if (descricao) descricao = '<div class="badge-descricao">' + descricao + '</div>';
+  var dataRec = o.data_recebido ? 'Rec: ' + fmt(o.data_recebido) : 'Rec: sem data';
+  var dataEnt = o.data_entrega ? 'Ent: ' + fmt(o.data_entrega) : 'Ent: —';
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
     '<div class="top"><span class="num">' + o.numero + '</span>' +
     '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span></div>' +
+    (badges ? '<div style="margin-top:6px">' + badges + '</div>' : '') +
     '<div class="cliente">' + o.cliente_nome + '</div>' +
-    '<div class="sub"><span>' + (o.categoria||'—') + '</span><span' + (!o.data_recebido ? ' style="color:#fde047"' : '') + '>' + fmt(o.data_recebido) + '</span></div>' +
+    descricao +
+    '<div class="sub"><span>' + (o.categoria||'—') + '</span><span>' + dataRec + '</span></div>' +
+    '<div class="sub"><span></span><span>' + dataEnt + '</span></div>' +
     (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:8px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
     '</div>';
 }
