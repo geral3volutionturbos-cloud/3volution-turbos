@@ -1372,8 +1372,6 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro auth: ' + e.message + '</div>';
   });
 });
-</script>
-  
 async function toggleUrgente(id, valor) {
   await updateObra(id, { urgente: valor });
   renderObra(document.getElementById('main'), id);
@@ -1382,6 +1380,7 @@ async function toggleVendaWeb(id, valor) {
   await updateObra(id, { venda_web: valor });
   renderObra(document.getElementById('main'), id);
 }
-  
+</script>
+   
 </body>
 </html>
