@@ -714,16 +714,21 @@ async function guardarNova() {
 // ===== OBRA =====
 async function renderObra(m, id) {
   var o = await getObra(id);
-  if (!o) { m.innerHTML = '<p class="muted">Obra não encontrada.</p>'; return; }
-  var antes = await getFotos(id, 'antes');
-  var depois = await getFotos(id, 'depois');
+  if (!o) { m.innerHTML = '<p class="muted">Obra não encont '</rada.</p>div'; return; }
+  var antes = await></ getdivFotos(id, 'antes');
+ >' var depois = await getFotos(id, 'depois');
   var pag = estadoPagamento(o);
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(paginaAnterior)">←</button>' +
-      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + '</div></div>' +
+      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + +
       '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span>' +
     '</div>' +
+    (o.urgente || o.venda_web ?
+      '<div style="margin-bottom:12px">' +
+        (o.urgente ? '<span class="badge-urgente" style="font-size:13px;padding:6px 12px">🔴 URGENTE</span> ' : '') +
+        (o.venda_web ? '<span class="badge-web" style="font-size:13px;padding:6px 12px">🌐 VENDA WEB</span>' : '') +
+      '</div>' : '') +
     '<div class="card">' +
       '<div class="linha" style="margin-bottom:16px">' +
         '<h3 style="margin:0">' + o.cliente_nome + '</h3>' +
@@ -763,6 +768,15 @@ async function renderObra(m, id) {
       '<label>Notas de pagamento</label><textarea id="p-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
       '<div id="pag-msg" class="muted small" style="min-height:18px;margin-bottom:8px;text-align:center"></div>' +
       '<button class="btn btn-sec" onclick="guardarPagamento(\'' + id + '\')">Guardar pagamento</button>' +
+    '</div>' +
+    '<div class="card">' +
+      '<h3 style="margin:0 0 12px">🏷️ Marcações</h3>' +
+      '<button class="toggle-urg ' + (o.urgente?'ativo':'') + '" onclick="toggleUrgente(\'' + id + '\',' + (!o.urgente) + ')">' +
+        (o.urgente ? '🔴 Urgente (clica para remover)' : '⚪ Marcar como urgente') +
+      '</button>' +
+      '<button class="toggle-urg toggle-web ' + (o.venda_web?'ativo':'') + '" onclick="toggleVendaWeb(\'' + id + '\',' + (!o.venda_web) + ')">' +
+        (o.venda_web ? '🌐 Venda Web (clica para remover)' : '⚪ Marcar como venda web') +
+      '</button>' +
     '</div>' +
     '<div class="card">' +
       '<h3 style="margin:0 0 8px">Estado da obra</h3>' +
