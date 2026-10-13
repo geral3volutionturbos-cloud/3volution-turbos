@@ -1438,6 +1438,41 @@ function mudarPaginaInicio(delta) {
   renderInicio(document.getElementById('main'));
   window.scrollTo(0, 0);
 }
+
+async function toggleUrgenteCard(id, valor) {
+  await updateObra(id, { urgente: valor });
+  // Atualizar só o badge na DOM, sem re-render
+  var cards = document.querySelectorAll('.obra');
+  for (var i = 0; i < cards.length; i++) {
+    var c = cards[i];
+    if (c.getAttribute('onclick').indexOf(id) !== -1) {
+      var badge = c.querySelector('.badge-urgente-on, .badge-urgente-off');
+      if (badge) {
+        badge.className = valor ? 'badge-urgente-on' : 'badge-urgente-off';
+        badge.textContent = valor ? '🔴 URG' : '⚪ URG';
+        badge.setAttribute('onclick', 'event.stopPropagation();toggleUrgenteCard(\'' + id + '\',' + (!valor) + ')');
+      }
+      break;
+    }
+  }
+}
+
+async function toggleVendaWebCard(id, valor) {
+  await updateObra(id, { venda_web: valor });
+  var cards = document.querySelectorAll('.obra');
+  for (var i = 0; i < cards.length; i++) {
+    var c = cards[i];
+    if (c.getAttribute('onclick').indexOf(id) !== -1) {
+      var badge = c.querySelector('.badge-web-on, .badge-web-off');
+      if (badge) {
+        badge.className = valor ? 'badge-web-on' : 'badge-web-off';
+        badge.textContent = valor ? '🌐 WEB' : '⚪ WEB';
+        badge.setAttribute('onclick', 'event.stopPropagation();toggleVendaWebCard(\'' + id + '\',' + (!valor) + ')');
+      }
+      break;
+    }
+  }
+}
   
 async function toggleUrgente(id, valor) {
   await updateObra(id, { urgente: valor });
