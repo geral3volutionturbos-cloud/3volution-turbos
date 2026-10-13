@@ -1016,11 +1016,11 @@ async function renderClientesLista(m) {
 
 function cardCliente(c) {
   return '<div class="cliente-card" onclick="nav(\'cliente-detalhe\',\'' + c.id + '\')">' +
-    '<div class="linha"><strong>' + c.nome + '</strong></div>' +
-    (c.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + c.telefone + '</div>' : '') +
-    (c.email ? '<div class="muted small">✉️ ' + c.email + '</div>' : '') +
-    (c.nif ? '<div class="muted small">NIF: ' + c.nif + '</div>' : '') +
-    (c.rua ? '<div class="muted small">📍 ' + c.rua + (c.codigo_postal ? ', ' + c.codigo_postal : '') + (c.localidade ? ' ' + c.localidade : '') + '</div>' : '') +
+    '<div class="linha"><strong>' + esc(c.nome) + '</strong></div>' +
+    (c.telefone ? '<div class="muted small" style="margin-top:4px">📞 ' + esc(c.telefone) + '</div>' : '') +
+    (c.email ? '<div class="muted small">✉️ ' + esc(c.email) + '</div>' : '') +
+    (c.nif ? '<div class="muted small">NIF: ' + esc(c.nif) + '</div>' : '') +
+    (c.rua ? '<div class="muted small">📍 ' + esc(c.rua) + (c.codigo_postal ? ', ' + esc(c.codigo_postal) : '') + (c.localidade ? ' ' + esc(c.localidade) : '') + '</div>' : '') +
     '</div>';
 }
 
