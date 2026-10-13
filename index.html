@@ -810,7 +810,7 @@ async function renderObra(m, id) {
 }
 
 function campo(lbl, val) {
-  return '<div class="campo-info"><div class="lbl">' + lbl + '</div><div class="val">' + (val || '—') + '</div></div>';
+  return '<div class="campo-info"><div class="lbl">' + esc(lbl) + '</div><div class="val">' + esc(val || '—') + '</div></div>';
 }
 
 async function guardarPagamento(id) {
