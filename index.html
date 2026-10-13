@@ -742,8 +742,8 @@ async function renderObra(m, id) {
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(paginaAnterior)">←</button>' +
-      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + o.numero + '</div></div>' +
-      '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span>' +
+      '<div class="info"><div class="tag">FOLHA DE OBRA</div><div class="num">' + esc(o.numero) + '</div></div>' +
+      '<span class="badge ' + esc((o.estado||'').replace(/\s/g,'')) + '">' + esc(o.estado) + '</span>' +
     '</div>' +
     (o.urgente || o.venda_web ?
       '<div style="margin-bottom:12px">' +
@@ -754,9 +754,9 @@ async function renderObra(m, id) {
       '<div class="linha" style="margin-bottom:16px">' +
         '<h3 style="margin:0">' + esc(o.cliente_nome) + '</h3>' +
         (o.cliente_telefone ? '<div style="display:flex;gap:8px">' +
-  '<a href="tel:' + o.cliente_telefone + '" class="voltar" title="Ligar">📞</a>' +
-  '<a href="' + whatsappUrl(o.cliente_telefone) + '" target="_blank" class="voltar" title="WhatsApp">💬</a>' +
-'</div>' : '') +
+          '<a href="tel:' + esc(o.cliente_telefone) + '" class="voltar" title="Ligar">📞</a>' +
+          '<a href="' + esc(whatsappUrl(o.cliente_telefone)) + '" target="_blank" class="voltar" title="WhatsApp">💬</a>' +
+        '</div>' : '') +
       '</div>' +
       '<div class="grid-info">' +
         campo('Telefone', o.cliente_telefone) +
@@ -770,7 +770,7 @@ async function renderObra(m, id) {
         campo('Motorização', o.motorizacao) +
         campo('Ref. turbo', o.ref_turbo) +
       '</div>' +
-      (o.notas ? '<div style="margin-top:12px"><div class="muted small">Notas</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas + '</div></div>' : '') +
+      (o.notas ? '<div style="margin-top:12px"><div class="muted small">Notas</div><div style="margin-top:4px;white-space:pre-wrap">' + esc(o.notas) + '</div></div>' : '') +
       renderFotos(id, 'antes', antes) +
       renderFotos(id, 'depois', depois) +
     '</div>' +
@@ -781,12 +781,12 @@ async function renderObra(m, id) {
         campo('Valor pago', fmtMoeda(o.valor_pago)) +
       '</div>' +
       '<div style="margin:8px 0 12px"><span class="badge-pago ' + pag.classe + '" style="font-size:14px;padding:8px 16px">' + pag.texto + '</span></div>' +
-      (o.notas_pagamento ? '<div style="margin-top:8px"><div class="muted small">Notas de pagamento</div><div style="margin-top:4px;white-space:pre-wrap">' + o.notas_pagamento + '</div></div>' : '') +
+      (o.notas_pagamento ? '<div style="margin-top:8px"><div class="muted small">Notas de pagamento</div><div style="margin-top:4px;white-space:pre-wrap">' + esc(o.notas_pagamento) + '</div></div>' : '') +
       '<div class="valor-linha" style="margin-top:16px">' +
-        '<div><label>Valor total (€)</label><input id="p-total" type="number" step="0.01" value="' + (o.valor_total||'') + '"></div>' +
-        '<div><label>Valor pago (€)</label><input id="p-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '"></div>' +
+        '<div><label>Valor total (€)</label><input id="p-total" type="number" step="0.01" value="' + esc(o.valor_total||'') + '"></div>' +
+        '<div><label>Valor pago (€)</label><input id="p-pago" type="number" step="0.01" value="' + esc(o.valor_pago||'') + '"></div>' +
       '</div>' +
-      '<label>Notas de pagamento</label><textarea id="p-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
+      '<label>Notas de pagamento</label><textarea id="p-notas-pag" rows="2">' + esc(o.notas_pagamento||'') + '</textarea>' +
       '<div id="pag-msg" class="muted small" style="min-height:18px;margin-bottom:8px;text-align:center"></div>' +
       '<button class="btn btn-sec" onclick="guardarPagamento(\'' + id + '\')">Guardar pagamento</button>' +
     '</div>' +
