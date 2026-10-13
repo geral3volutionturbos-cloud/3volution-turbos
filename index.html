@@ -176,6 +176,7 @@ var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
 var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / Turbos novos', 'Material e turbos novos', 'Tubagens / Embraiagem', 'Mecânica', 'Garantia', 'Outros'];
 var userAtual = null;
 var paginaAnterior = 'inicio';
+var paginaInicio = 0;
 var filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '' };
 
 window.addEventListener('error', function(e) {
