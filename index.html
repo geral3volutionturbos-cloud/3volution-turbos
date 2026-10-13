@@ -519,6 +519,9 @@ async function renderInicio(m) {
   var mesAtualRange = inicioFimMes(anoAtual, mesAtual);
   var mesAntRange = inicioFimMes(anoMesAnt, mesAnt);
 
+  var POR_PAGINA = 20;
+  var offset = paginaInicio * POR_PAGINA;
+
   var resultados = await Promise.all([
     sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Recebido'),
     sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Em reparação'),
@@ -526,7 +529,11 @@ async function renderInicio(m) {
     sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Entregue').eq('data_entrega', hoje()),
     sb.from('obras').select('valor_pago').gte('data_entrega', mesAtualRange.ini).lte('data_entrega', mesAtualRange.fim),
     sb.from('obras').select('valor_pago').gte('data_entrega', mesAntRange.ini).lte('data_entrega', mesAntRange.fim),
-    sb.from('obras').select('*').order('created_at', { ascending: false }).limit(3)
+    sb.from('obras').select('*', { count: 'exact' })
+      .in('estado', ['Recebido', 'Em reparação', 'Pronto'])
+      .order('urgente', { ascending: false })
+      .order('data_recebido', { ascending: true })
+      .range(offset, offset + POR_PAGINA - 1)
   ]);
 
   var recebidos = resultados[0].count || 0;
@@ -535,7 +542,9 @@ async function renderInicio(m) {
   var entreguesHoje = resultados[3].count || 0;
   var obrasMes = resultados[4].data || [];
   var obrasMesAnt = resultados[5].data || [];
-  var recentes = resultados[6].data || [];
+  var obrasAbertas = resultados[6].data || [];
+  var totalAbertas = resultados[6].count || 0;
+  var totalPaginas = Math.max(1, Math.ceil(totalAbertas / POR_PAGINA));
 
   var faturacaoMes = obrasMes.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
   var faturacaoMesAnt = obrasMesAnt.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
@@ -571,6 +580,15 @@ async function renderInicio(m) {
     variacaoCor: variacaoCor
   };
 
+  var paginacao = '';
+  if (totalPaginas > 1) {
+    paginacao = '<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0;gap:8px">' +
+      '<button class="btn btn-sec btn-pequeno" ' + (paginaInicio === 0 ? 'disabled style="opacity:0.4"' : '') + ' onclick="mudarPaginaInicio(-1)">← Anterior</button>' +
+      '<span class="muted small">Página ' + (paginaInicio + 1) + ' de ' + totalPaginas + '</span>' +
+      '<button class="btn btn-sec btn-pequeno" ' + (paginaInicio >= totalPaginas - 1 ? 'disabled style="opacity:0.4"' : '') + ' onclick="mudarPaginaInicio(1)">Seguinte →</button>' +
+    '</div>';
+  }
+
   m.innerHTML =
     '<div class="destaque">' +
       '<p class="tag">OFICINA</p>' +
@@ -592,8 +610,11 @@ async function renderInicio(m) {
     '</div>' +
     '<button class="btn btn-primary" onclick="nav(\'nova\')">📋 Nova folha de obra</button>' +
     '<button class="btn btn-sec" onclick="nav(\'pesquisar\')">🔍 Pesquisa rápida</button>' +
-    '<div class="linha"><h3>Obras recentes</h3><a class="muted small" onclick="nav(\'clientes\')" style="cursor:pointer">Ver todas</a></div>' +
-    (recentes.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras.</p>');
+    '<div class="linha" style="margin-top:20px"><h3 style="margin:0">Obras em curso</h3><span class="muted small">' + totalAbertas + ' obra(s)</span></div>' +
+    '<div style="margin-top:12px">' +
+      (obrasAbertas.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Sem obras em curso. 🎉</p>') +
+    '</div>' +
+    paginacao;
 }
 
 function cardObra(o) {
