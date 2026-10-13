@@ -600,26 +600,24 @@ function cardObra(o) {
   var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
 
   var badges = '';
-  badges += '<span class="' + (o.urgente ? 'badge-urgente-on' : 'badge-urgente-off') + '" onclick="event.stopPropagation();toggleUrgente(\'' + o.id + '\',' + (!o.urgente) + ')">' + (o.urgente ? '🔴 URG' : '⚪ URG') + '</span>';
-  badges += '<span class="' + (o.venda_web ? 'badge-web-on' : 'badge-web-off') + '" onclick="event.stopPropagation();toggleVendaWeb(\'' + o.id + '\',' + (!o.venda_web) + ')">' + (o.venda_web ? '🌐 WEB' : '⚪ WEB') + '</span>';
+  if (o.urgente) badges += '<span class="badge-urgente-on" onclick="event.stopPropagation();toggleUrgente(\'' + o.id + '\',false)">URG</span>';
+  if (o.venda_web) badges += '<span class="badge-web-on" onclick="event.stopPropagation();toggleVendaWeb(\'' + o.id + '\',false)">WEB</span>';
 
-  var descricao = '';
-  if (o.ref_turbo && o.ref_turbo.trim()) descricao = o.ref_turbo;
-  else if (o.notas && o.notas.trim()) descricao = o.notas.substring(0, 50);
-  if (descricao) descricao = '<div class="badge-descricao">' + esc(descricao) + '</div>';
+  var dataRec = o.data_recebido ? fmt(o.data_recebido) : '—';
+  var dataEnt = o.data_entrega ? fmt(o.data_entrega) : null;
+  var datas = 'Rec ' + dataRec + (dataEnt ? ' · Ent ' + dataEnt : '');
 
-  var dataRec = o.data_recebido ? 'Rec: ' + fmt(o.data_recebido) : 'Rec: sem data';
-  var dataEnt = o.data_entrega ? 'Ent: ' + fmt(o.data_entrega) : 'Ent: —';
+  var refInfo = '';
+  if (o.ref_turbo && o.ref_turbo.trim()) refInfo = o.ref_turbo.trim();
+  else if (o.notas && o.notas.trim()) refInfo = o.notas.substring(0, 40);
 
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
-    '<div class="top"><span class="num">' + esc(o.numero) + '</span>' +
+    '<div class="top"><span class="num">' + esc(o.numero) + ' ' + badges + '</span>' +
     '<span class="badge ' + esc((o.estado||'').replace(/\s/g,'')) + '">' + esc(o.estado) + '</span></div>' +
-    '<div style="margin-top:6px">' + badges + '</div>' +
     '<div class="cliente">' + esc(o.cliente_nome) + '</div>' +
-    descricao +
-    '<div class="sub"><span>' + esc(o.categoria||'—') + '</span><span>' + dataRec + '</span></div>' +
-    '<div class="sub"><span></span><span>' + dataEnt + '</span></div>' +
-    (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:8px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
+    '<div class="sub"><span>' + esc(o.categoria||'—') + '</span><span>' + datas + '</span></div>' +
+    (refInfo ? '<div class="badge-descricao">' + esc(refInfo) + '</div>' : '') +
+    (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:6px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
     '</div>';
 }
 
