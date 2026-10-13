@@ -445,6 +445,7 @@ function nav(pagina, extra) {
   if (pagina !== 'obra') {
     paginaAnterior = pagina;
   }
+  if (pagina === 'inicio') paginaInicio = 0;
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   ['inicio','nova','pesquisar'].forEach(function(p) {
