@@ -752,7 +752,7 @@ async function renderObra(m, id) {
       '</div>' : '') +
     '<div class="card">' +
       '<div class="linha" style="margin-bottom:16px">' +
-        '<h3 style="margin:0">' + o.cliente_nome + '</h3>' +
+        '<h3 style="margin:0">' + esc(o.cliente_nome) + '</h3>' +
         (o.cliente_telefone ? '<div style="display:flex;gap:8px">' +
   '<a href="tel:' + o.cliente_telefone + '" class="voltar" title="Ligar">📞</a>' +
   '<a href="' + whatsappUrl(o.cliente_telefone) + '" target="_blank" class="voltar" title="WhatsApp">💬</a>' +
