@@ -656,7 +656,7 @@ function procurarCliente(txt) {
   });
   if (clientes.length === 0) { lista.classList.remove('show'); return; }
   lista.innerHTML = clientes.map(function(c) {
-    return '<div onclick="escolherCliente(\'' + c.id + '\')"><strong>' + c.nome + '</strong>' + (c.telefone ? '<span class="muted small"> · ' + c.telefone + '</span>' : '') + '</div>';
+    return '<div onclick="escolherCliente(\'' + c.id + '\')"><strong>' + esc(c.nome) + '</strong>' + (c.telefone ? '<span class="muted small"> · ' + esc(c.telefone) + '</span>' : '') + '</div>';
   }).join('');
   lista.classList.add('show');
 }
