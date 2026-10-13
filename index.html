@@ -623,8 +623,8 @@ function cardObra(o) {
   var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
 
   var badges = '';
-  if (o.urgente) badges += '<span class="badge-urgente-on" onclick="event.stopPropagation();toggleUrgente(\'' + o.id + '\',false)">URG</span>';
-  if (o.venda_web) badges += '<span class="badge-web-on" onclick="event.stopPropagation();toggleVendaWeb(\'' + o.id + '\',false)">WEB</span>';
+  badges += '<span class="' + (o.urgente ? 'badge-urgente-on' : 'badge-urgente-off') + '" onclick="event.stopPropagation();toggleUrgenteCard(\'' + o.id + '\',' + (!o.urgente) + ')">' + (o.urgente ? '🔴 URG' : '⚪ URG') + '</span>';
+  badges += '<span class="' + (o.venda_web ? 'badge-web-on' : 'badge-web-off') + '" onclick="event.stopPropagation();toggleVendaWebCard(\'' + o.id + '\',' + (!o.venda_web) + ')">' + (o.venda_web ? '🌐 WEB' : '⚪ WEB') + '</span>';
 
   var dataRec = o.data_recebido ? fmt(o.data_recebido) : '—';
   var dataEnt = o.data_entrega ? fmt(o.data_entrega) : null;
@@ -635,12 +635,15 @@ function cardObra(o) {
   else if (o.notas && o.notas.trim()) refInfo = o.notas.substring(0, 40);
 
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
-    '<div class="top"><span class="num">' + esc(o.numero) + ' ' + badges + '</span>' +
+    '<div class="top"><span class="num">' + esc(o.numero) + '</span>' +
     '<span class="badge ' + esc((o.estado||'').replace(/\s/g,'')) + '">' + esc(o.estado) + '</span></div>' +
     '<div class="cliente">' + esc(o.cliente_nome) + '</div>' +
     '<div class="sub"><span>' + esc(o.categoria||'—') + '</span><span>' + datas + '</span></div>' +
     (refInfo ? '<div class="badge-descricao">' + esc(refInfo) + '</div>' : '') +
-    (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:6px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
+    '<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+      badges +
+      (mostrarPag && o.valor_total > 0 ? '<span class="badge-pago ' + pag.classe + '" style="margin-left:auto">' + pag.texto + '</span>' : '') +
+    '</div>' +
     '</div>';
 }
 
