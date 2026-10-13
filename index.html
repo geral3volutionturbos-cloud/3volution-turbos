@@ -509,30 +509,36 @@ async function sair() {
 
 // ===== INÍCIO =====
 async function renderInicio(m) {
-  var obras = await getObras();
-  var h = hoje();
   var agora = new Date();
   var anoAtual = agora.getFullYear();
-  var mesAtual = agora.getMonth(); // 0-11
+  var mesAtual = agora.getMonth();
   var mesAnt = mesAtual === 0 ? 11 : mesAtual - 1;
   var anoMesAnt = mesAtual === 0 ? anoAtual - 1 : anoAtual;
 
-  // Filtros
-  var obrasMes = obras.filter(function(o) {
-    if (!o.data_entrega) return false;
-    var d = new Date(o.data_entrega + 'T00:00:00');
-    return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
-  });
-  var obrasMesAnt = obras.filter(function(o) {
-    if (!o.data_entrega) return false;
-    var d = new Date(o.data_entrega + 'T00:00:00');
-    return d.getFullYear() === anoMesAnt && d.getMonth() === mesAnt;
-  });
+  var mesAtualRange = inicioFimMes(anoAtual, mesAtual);
+  var mesAntRange = inicioFimMes(anoMesAnt, mesAnt);
+
+  var resultados = await Promise.all([
+    sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Recebido'),
+    sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Em reparação'),
+    sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Pronto'),
+    sb.from('obras').select('id', { count: 'exact', head: true }).eq('estado', 'Entregue').eq('data_entrega', hoje()),
+    sb.from('obras').select('valor_pago').gte('data_entrega', mesAtualRange.ini).lte('data_entrega', mesAtualRange.fim),
+    sb.from('obras').select('valor_pago').gte('data_entrega', mesAntRange.ini).lte('data_entrega', mesAntRange.fim),
+    sb.from('obras').select('*').order('created_at', { ascending: false }).limit(3)
+  ]);
+
+  var recebidos = resultados[0].count || 0;
+  var reparacao = resultados[1].count || 0;
+  var prontos = resultados[2].count || 0;
+  var entreguesHoje = resultados[3].count || 0;
+  var obrasMes = resultados[4].data || [];
+  var obrasMesAnt = resultados[5].data || [];
+  var recentes = resultados[6].data || [];
 
   var faturacaoMes = obrasMes.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
   var faturacaoMesAnt = obrasMesAnt.reduce(function(s, o) { return s + Number(o.valor_pago || 0); }, 0);
 
-  // Variação
   var variacaoValor = faturacaoMes - faturacaoMesAnt;
   var variacaoPct = faturacaoMesAnt > 0 ? Math.round((variacaoValor / faturacaoMesAnt) * 100) : 0;
   var variacaoTexto = '';
@@ -553,10 +559,10 @@ async function renderInicio(m) {
   }
 
   var s = {
-    recebidos: obras.filter(function(o){ return o.estado === 'Recebido'; }).length,
-    reparacao: obras.filter(function(o){ return o.estado === 'Em reparação'; }).length,
-    prontos: obras.filter(function(o){ return o.estado === 'Pronto'; }).length,
-    entregues: obras.filter(function(o){ return o.estado === 'Entregue' && o.data_entrega === h; }).length,
+    recebidos: recebidos,
+    reparacao: reparacao,
+    prontos: prontos,
+    entregues: entreguesHoje,
     entreguesMes: obrasMes.length,
     faturacaoMes: faturacaoMes,
     faturacaoMesAnt: faturacaoMesAnt,
@@ -564,7 +570,6 @@ async function renderInicio(m) {
     variacaoCor: variacaoCor
   };
 
-  var recentes = obras.slice(0,3);
   m.innerHTML =
     '<div class="destaque">' +
       '<p class="tag">OFICINA</p>' +
