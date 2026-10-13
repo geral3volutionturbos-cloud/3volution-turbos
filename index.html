@@ -592,18 +592,18 @@ function cardObra(o) {
   var descricao = '';
   if (o.ref_turbo && o.ref_turbo.trim()) descricao = o.ref_turbo;
   else if (o.notas && o.notas.trim()) descricao = o.notas.substring(0, 50);
-  if (descricao) descricao = '<div class="badge-descricao">' + descricao + '</div>';
+  if (descricao) descricao = '<div class="badge-descricao">' + esc(descricao) + '</div>';
 
   var dataRec = o.data_recebido ? 'Rec: ' + fmt(o.data_recebido) : 'Rec: sem data';
   var dataEnt = o.data_entrega ? 'Ent: ' + fmt(o.data_entrega) : 'Ent: —';
 
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
-    '<div class="top"><span class="num">' + o.numero + '</span>' +
-    '<span class="badge ' + (o.estado||'').replace(/\s/g,'') + '">' + o.estado + '</span></div>' +
+    '<div class="top"><span class="num">' + esc(o.numero) + '</span>' +
+    '<span class="badge ' + esc((o.estado||'').replace(/\s/g,'')) + '">' + esc(o.estado) + '</span></div>' +
     '<div style="margin-top:6px">' + badges + '</div>' +
-    '<div class="cliente">' + o.cliente_nome + '</div>' +
+    '<div class="cliente">' + esc(o.cliente_nome) + '</div>' +
     descricao +
-    '<div class="sub"><span>' + (o.categoria||'—') + '</span><span>' + dataRec + '</span></div>' +
+    '<div class="sub"><span>' + esc(o.categoria||'—') + '</span><span>' + dataRec + '</span></div>' +
     '<div class="sub"><span></span><span>' + dataEnt + '</span></div>' +
     (mostrarPag && o.valor_total > 0 ? '<div style="margin-top:8px"><span class="badge-pago ' + pag.classe + '">' + pag.texto + '</span></div>' : '') +
     '</div>';
