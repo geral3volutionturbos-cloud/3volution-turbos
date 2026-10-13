@@ -1426,6 +1426,15 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro auth: ' + e.message + '</div>';
   });
 });
+  
+function mudarPaginaInicio(delta) {
+  var nova = paginaInicio + delta;
+  if (nova < 0) nova = 0;
+  paginaInicio = nova;
+  renderInicio(document.getElementById('main'));
+  window.scrollTo(0, 0);
+}
+  
 async function toggleUrgente(id, valor) {
   await updateObra(id, { urgente: valor });
   renderObra(document.getElementById('main'), id);
