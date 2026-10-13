@@ -313,21 +313,21 @@ async function removeCliente(id) {
 // ===== OBRAS =====
   
 // ===== VERIFICAR DUPLICADOS =====
+  
 async function verificarDuplicado(dados) {
-  // Critério: telefone + notas + data_recebido (iguais)
   var tel = (dados.cliente_telefone || '').trim();
   var not = (dados.notas || '').trim();
   var dat = (dados.data_recebido || '').trim();
-  if (!tel && !not) return [];   // sem telefone nem notas, não dá para verificar
+  if (!tel && !not) return [];
 
-  var r = await sb.from('obras').select('*').eq('cliente_telefone', tel).eq('notas', not);
+  var r = await sb.from('obras')
+    .select('id, numero, cliente_nome, data_recebido')
+    .eq('cliente_telefone', tel)
+    .eq('notas', not)
+    .eq('data_recebido', dat);
+
   if (r.error || !r.data) return [];
-
-  // Filtra por data igual (null == null)
-  return r.data.filter(function(o) {
-    var odat = (o.data_recebido || '').trim();
-    return odat === dat;
-  });
+  return r.data;
 }
   
 async function getObras() {
