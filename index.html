@@ -656,16 +656,19 @@ function cardObra(o) {
   var dataEnt = o.data_entrega ? fmt(o.data_entrega) : null;
   var datas = 'Rec ' + dataRec + (dataEnt ? ' · Ent ' + dataEnt : '');
 
-  var refInfo = '';
-  if (o.ref_turbo && o.ref_turbo.trim()) refInfo = o.ref_turbo.trim();
-  else if (o.notas && o.notas.trim()) refInfo = o.notas.substring(0, 40);
+  var refTexto = '';
+  if (o.ref_turbo && o.ref_turbo.trim()) refTexto = o.ref_turbo.trim();
+  else if (o.notas && o.notas.trim()) refTexto = o.notas.trim();
+
+  var telefone = o.cliente_telefone ? '<span class="muted small">📞 ' + esc(o.cliente_telefone) + '</span>' : '';
 
   return '<div class="obra" onclick="nav(\'obra\',\'' + o.id + '\')">' +
     '<div class="top"><span class="num">' + esc(o.numero) + '</span>' +
     '<span class="badge ' + esc((o.estado||'').replace(/\s/g,'')) + '">' + esc(o.estado) + '</span></div>' +
     '<div class="cliente">' + esc(o.cliente_nome) + '</div>' +
+    (telefone ? '<div style="margin-top:2px">' + telefone + '</div>' : '') +
     '<div class="sub"><span>' + esc(o.categoria||'—') + '</span><span>' + datas + '</span></div>' +
-    (refInfo ? '<div class="badge-descricao">' + esc(refInfo) + '</div>' : '') +
+    (refTexto ? '<div class="badge-descricao" style="white-space:pre-wrap;word-break:break-word;margin-top:6px">' + esc(refTexto) + '</div>' : '') +
     '<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
       badges +
       (mostrarPag && o.valor_total > 0 ? '<span class="badge-pago ' + pag.classe + '" style="margin-left:auto">' + pag.texto + '</span>' : '') +
