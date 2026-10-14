@@ -135,13 +135,13 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
       <button onclick="toggleDrawer()" class="icon-btn">✕</button>
     </div>
     <nav>
-      <a onclick="nav('inicio')">📋 Início</a>
-      <a onclick="nav('nova')">➕ Nova obra</a>
-      <a onclick="nav('pesquisar')">🔍 Pesquisar</a>
-      <a onclick="nav('clientes-lista')">👤 Clientes</a>
-      <a onclick="nav('clientes')">👥 Clientes / Obras</a>
-      <a onclick="nav('relatorios')">📊 Relatórios</a>
-      <a onclick="nav('definicoes')">⚙️ Definições</a>
+      <a onclick="navBottom('inicio')">📋 Início</a>
+      <a onclick="navBottom('nova')">➕ Nova obra</a>
+      <a onclick="navBottom('pesquisar')">🔍 Pesquisar</a>
+      <a onclick="navBottom('clientes-lista')">👤 Clientes</a>
+      <a onclick="navBottom('clientes')">👥 Clientes / Obras</a>
+      <a onclick="navBottom('relatorios')">📊 Relatórios</a>
+      <a onclick="navBottom('definicoes')">⚙️ Definições</a>
     </nav>
     <button onclick="sair()" class="sair">⏻ Sair</button>
   </aside>
@@ -149,10 +149,10 @@ label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 
   <main id="main"><div class="loading">A carregar...</div></main>
 
-  <nav class="bottom-nav" style="display:none">
-    <button onclick="nav('inicio')" id="bn-inicio">📋<span>Início</span></button>
-    <button onclick="nav('nova')" id="bn-nova">➕<span>Nova obra</span></button>
-    <button onclick="nav('pesquisar')" id="bn-pesquisar">🔍<span>Pesquisar</span></button>
+<nav class="bottom-nav" style="display:none">
+    <button onclick="navBottom('inicio')" id="bn-inicio">📋<span>Início</span></button>
+    <button onclick="navBottom('nova')" id="bn-nova">➕<span>Nova obra</span></button>
+    <button onclick="navBottom('pesquisar')" id="bn-pesquisar">🔍<span>Pesquisar</span></button>
   </nav>
 </div>
 
