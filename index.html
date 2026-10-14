@@ -223,7 +223,8 @@ function compararObras(a, b) {
   var eb = b.data_entrega ? 1 : 0;
   if (ea !== eb) return ea - eb;
 
-  // 3. Não entregues → com data primeiro (ascendente), sem data no fim
+  // 3. Não entregues → com data primeiro (mais antigas primeiro),
+  //    sem data no fim, ordenadas entre si por created_at
   if (!ea) {
     var da = a.data_recebido || '9999-99-99';
     var db = b.data_recebido || '9999-99-99';
@@ -240,15 +241,6 @@ function compararObras(a, b) {
   if (a.data_entrega > b.data_entrega) return -1;
   if (a.data_entrega < b.data_entrega) return 1;
   return 0;
-}
-  
-function inicioFimMes(ano, mes) {
-  var ini = new Date(ano, mes, 1);
-  var fim = new Date(ano, mes + 1, 0);
-  function s(d) {
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-  return { ini: s(ini), fim: s(fim) };
 }
   
 function fmt(d) { if (!d) return 'sem data'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
