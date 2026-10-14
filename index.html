@@ -1479,6 +1479,19 @@ function mudarPaginaInicio(delta) {
   window.scrollTo(0, 0);
 }
 
+async function mudarPaginaInicio(delta) {
+  var nova = paginaInicio + delta;
+  if (nova < 0) nova = 0;
+  paginaInicio = nova;
+  await renderInicio(document.getElementById('main'));
+  setTimeout(function() {
+    var anchor = document.getElementById('obras-em-curso');
+    if (!anchor) return;
+    var y = anchor.getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo(0, y);
+  }, 100);
+}
+  
 async function toggleUrgenteCard(id, valor) {
   await updateObra(id, { urgente: valor });
   // Atualizar só o badge na DOM, sem re-render
