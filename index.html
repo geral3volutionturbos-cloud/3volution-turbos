@@ -474,7 +474,17 @@ function toggleDrawer() {
   document.getElementById('overlay').classList.toggle('show');
 }
 function nav(pagina, extra) {
-  if (pagina !== paginaAtual) {
+  _nav(pagina, extra, false);
+}
+
+function navBottom(pagina) {
+  _nav(pagina, undefined, true);
+}
+
+function _nav(pagina, extra, isBottom) {
+  if (isBottom) {
+    paginaAnterior = 'inicio';
+  } else if (pagina !== paginaAtual) {
     paginaAnterior = paginaAtual;
   }
   paginaAtual = pagina;
