@@ -1427,6 +1427,11 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('main').innerHTML = '<div class="loading" style="color:#e11d2e">Erro auth: ' + e.message + '</div>';
   });
 });
+
+function abrirFiltroCat(cat) {
+  filtrosPesquisa = { busca: '', estado: '', categoria: cat, ini: '', fim: '', semData: false };
+  nav('pesquisar');
+}
   
 async function carregarMaisInicio() {
   var cardsAntes = document.querySelectorAll('.obra').length;
