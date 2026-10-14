@@ -1428,24 +1428,16 @@ window.addEventListener('DOMContentLoaded', function() {
   });
 });
   
-function mudarPaginaInicio(delta) {
-  var nova = paginaInicio + delta;
-  if (nova < 0) nova = 0;
-  paginaInicio = nova;
-  renderInicio(document.getElementById('main'));
-  window.scrollTo(0, 0);
-}
-
-async function mudarPaginaInicio(delta) {
-  var nova = paginaInicio + delta;
-  if (nova < 0) nova = 0;
-  paginaInicio = nova;
+async function carregarMaisInicio() {
+  var cardsAntes = document.querySelectorAll('.obra').length;
+  paginaInicio++;
   await renderInicio(document.getElementById('main'));
   setTimeout(function() {
-    var anchor = document.getElementById('obras-em-curso');
-    if (!anchor) return;
-    var y = anchor.getBoundingClientRect().top + window.pageYOffset - 80;
-    window.scrollTo(0, y);
+    var todos = document.querySelectorAll('.obra');
+    if (todos[cardsAntes]) {
+      var y = todos[cardsAntes].getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo(0, y);
+    }
   }, 100);
 }
   
