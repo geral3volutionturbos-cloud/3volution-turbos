@@ -1051,6 +1051,7 @@ function filtrar() {
     var mf = !fim || o.data_recebido <= fim;
     return mb && me && mc && mi && mf;
   });
+  res.sort(compararObras);
   document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
   document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
 }
