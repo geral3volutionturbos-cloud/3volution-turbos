@@ -978,8 +978,9 @@ async function renderPesquisar(m, filtroEstado) {
       '</select>' +
       '<label class="filtro-label">Categoria</label>' +
       '<select id="p-cat" onchange="filtrar()"><option value="">Todas as categorias</option>' +
-        CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
-      '</select>' +
+  '<option value="__urgentes"' + (filtrosPesquisa.categoria === '__urgentes' ? ' selected' : '') + '>🔴 Urgentes</option>' +
+  CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
+'</select>' +
       '<label class="filtro-label">Período (data de receção)</label>' +
       '<div class="filtros-data">' +
         '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.ini || '') + '"></div>' +
