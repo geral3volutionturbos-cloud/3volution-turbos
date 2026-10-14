@@ -176,6 +176,7 @@ var ESTADOS = ['Recebido', 'Em reparação', 'Pronto', 'Entregue'];
 var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / Turbos novos', 'Material e turbos novos', 'Tubagens / Embraiagem', 'Mecânica', 'Garantia', 'Outros'];
 var userAtual = null;
 var paginaAnterior = 'inicio';
+var paginaAtual = 'inicio';
 var paginaInicio = 1;
 var filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '' };
 
@@ -473,10 +474,12 @@ function toggleDrawer() {
   document.getElementById('overlay').classList.toggle('show');
 }
 function nav(pagina, extra) {
-  if (pagina !== 'obra') {
-    paginaAnterior = pagina;
+  if (pagina !== paginaAtual) {
+    paginaAnterior = paginaAtual;
   }
+  paginaAtual = pagina;
   if (pagina === 'inicio') paginaInicio = 1;
+
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
   ['inicio','nova','pesquisar'].forEach(function(p) {
