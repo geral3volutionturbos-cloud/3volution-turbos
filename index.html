@@ -1111,6 +1111,7 @@ async function renderClienteDetalhe(m, id) {
   if (!c) { m.innerHTML = '<p class="muted">Cliente não encontrado.</p>'; return; }
   var obras = await getObras();
   var minhasObras = obras.filter(function(o){ return o.cliente_id === id; });
+  minhasObras.sort(compararObras);
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(\'clientes-lista\')">←</button>' +
@@ -1188,6 +1189,7 @@ async function renderClientes(m) {
   var obras = await getObras();
   var grupos = {};
   obras.forEach(function(o) { (grupos[o.cliente_nome] = grupos[o.cliente_nome] || []).push(o); });
+  Object.keys(grupos).forEach(function(k) { grupos[k].sort(compararObras); });
   var clientes = Object.keys(grupos).sort();
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Clientes / Obras</h2>' +
@@ -1424,6 +1426,7 @@ async function abrirObrasDevedor(nomeCliente) {
     if (o.estado !== 'Entregue') return false;
     return (Number(o.valor_total || 0) - Number(o.valor_pago || 0)) > 0.01;
   });
+  obrasCliente.sort(compararObras);
   var totalDivida = obrasCliente.reduce(function(soma, o) { return soma + (Number(o.valor_total || 0) - Number(o.valor_pago || 0)); }, 0);
   var telefone = obrasCliente[0] ? obrasCliente[0].cliente_telefone : '';
   m.innerHTML =
