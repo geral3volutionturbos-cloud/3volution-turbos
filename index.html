@@ -211,6 +211,32 @@ function whatsappUrl(telefone) {
   // Se já tem indicativo sem +, usa assim
   return 'https://wa.me/' + digitos;
 }
+
+function compararObras(a, b) {
+  // 1. Urgentes primeiro
+  var ua = a.urgente ? 1 : 0;
+  var ub = b.urgente ? 1 : 0;
+  if (ua !== ub) return ub - ua;
+
+  // 2. Não entregues antes de entregues
+  var ea = a.data_entrega ? 1 : 0;
+  var eb = b.data_entrega ? 1 : 0;
+  if (ea !== eb) return ea - eb;
+
+  // 3. Ambos não entregues → data_recebido ascendente (mais antigas primeiro)
+  if (!ea) {
+    var da = a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '9999-99-99');
+    var db = b.data_recebido || (b.created_at ? b.created_at.substring(0,10) : '9999-99-99');
+    if (da < db) return -1;
+    if (da > db) return 1;
+    return 0;
+  }
+
+  // 4. Ambos entregues → data_entrega descendente (mais recentes primeiro)
+  if (a.data_entrega > b.data_entrega) return -1;
+  if (a.data_entrega < b.data_entrega) return 1;
+  return 0;
+}
   
 function inicioFimMes(ano, mes) {
   var ini = new Date(ano, mes, 1);
@@ -1020,7 +1046,7 @@ function filtrar() {
       (o.veiculo||'').toLowerCase().indexOf(b) !== -1 ||
       (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1;
     var me = !e || o.estado === e;
-    var mc = !c || o.categoria === c;
+    var mc = !c || (c === '__urgentes' ? o.urgente : o.categoria === c);
     var mi = !ini || o.data_recebido >= ini;
     var mf = !fim || o.data_recebido <= fim;
     return mb && me && mc && mi && mf;
