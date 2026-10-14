@@ -223,16 +223,20 @@ function compararObras(a, b) {
   var eb = b.data_entrega ? 1 : 0;
   if (ea !== eb) return ea - eb;
 
-  // 3. Ambos não entregues → data_recebido ascendente (mais antigas primeiro)
+  // 3. Não entregues → com data primeiro (ascendente), sem data no fim
   if (!ea) {
-    var da = a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '9999-99-99');
-    var db = b.data_recebido || (b.created_at ? b.created_at.substring(0,10) : '9999-99-99');
+    var da = a.data_recebido || '9999-99-99';
+    var db = b.data_recebido || '9999-99-99';
     if (da < db) return -1;
     if (da > db) return 1;
+    var ca = a.created_at || '';
+    var cb = b.created_at || '';
+    if (ca < cb) return -1;
+    if (ca > cb) return 1;
     return 0;
   }
 
-  // 4. Ambos entregues → data_entrega descendente (mais recentes primeiro)
+  // 4. Entregues → data_entrega descendente (mais recentes primeiro)
   if (a.data_entrega > b.data_entrega) return -1;
   if (a.data_entrega < b.data_entrega) return 1;
   return 0;
