@@ -212,7 +212,16 @@ function whatsappUrl(telefone) {
   // Se já tem indicativo sem +, usa assim
   return 'https://wa.me/' + digitos;
 }
-
+  
+function inicioFimMes(ano, mes) {
+  var ini = new Date(ano, mes, 1);
+  var fim = new Date(ano, mes + 1, 0);
+  function s(d) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  return { ini: s(ini), fim: s(fim) };
+}
+  
 function compararObras(a, b) {
   // 1. Urgentes primeiro
   var ua = a.urgente ? 1 : 0;
