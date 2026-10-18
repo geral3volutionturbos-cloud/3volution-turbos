@@ -622,7 +622,7 @@ async function renderInicio(m) {
 
 function cardObra(o) {
   var pag = estadoPagamento(o);
-  var mostrarPag = (o.estado === 'Pronto' || o.estado === 'Entregue');
+  var mostrarPag = (o.valor_total > 0 || o.valor_pago > 0 || o.estado === 'Pronto' || o.estado === 'Entregue');
 
   var badges = '';
   badges += '<span class="' + (o.urgente ? 'badge-urgente-on' : 'badge-urgente-off') + '" onclick="event.stopPropagation();toggleUrgenteCard(\'' + o.id + '\',' + (!o.urgente) + ')">' + (o.urgente ? '🔴 URG' : '⚪ URG') + '</span>';
