@@ -1049,10 +1049,6 @@ function filtrar() {
   var lista = document.getElementById('p-lista');
   if (lista) lista.innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
 }
-  res.sort(compararObras);
-  document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
-  document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
 
 function limparFiltros() {
   filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '' };
