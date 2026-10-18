@@ -1006,31 +1006,49 @@ function filtrar() {
   var c = document.getElementById('p-cat').value;
   var ini = document.getElementById('p-ini').value;
   var fim = document.getElementById('p-fim').value;
-  filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim };
+  
+  var elSemData = document.getElementById('p-sem-data');
+  var semData = elSemData ? elSemData.checked : false;
+
+  filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim, semData: semData };
+
   var res = (window._todasObras || []).filter(function(o) {
     var telNorm = normalizarNumero(o.cliente_telefone || '');
     var tel2Norm = normalizarNumero(o.cliente_telefone2 || '');
     var nifNorm = normalizarNumero(o.cliente_nif || '');
     var matNorm = normalizarNumero(o.matricula || '');
     var numNorm = normalizarNumero(o.numero || '');
+    
     var mb = !b ||
       (o.numero || '').toLowerCase().indexOf(b) !== -1 ||
       numNorm.indexOf(bNum) !== -1 ||
       (o.cliente_nome || '').toLowerCase().indexOf(b) !== -1 ||
       telNorm.indexOf(bNum) !== -1 ||
-      tel2 !==Norm.indexOf(bNum) !== -1 ||
-      nif -Norm.indexOf(bNum) !== -1 ||
-      mat1Norm.toLowerCase().indexOf(bNum) !== -1 ||
-      (o.matricula||'').toLowerCase().indexOf(b) !== -1 ||
-      (o.veiculo||'').toLowerCase().indexOf(b) ||
-      (o.ref_turbo||'').toLowerCase().indexOf(b) !== -1 ||
-      (o.notas||'').toLowerCase().indexOf(b) !== -1;
+      tel2Norm.indexOf(bNum) !== -1 ||
+      nifNorm.indexOf(bNum) !== -1 ||
+      (o.matricula || '').toLowerCase().indexOf(bNum) !== -1 ||
+      (o.matricula || '').toLowerCase().indexOf(b) !== -1 ||
+      (o.veiculo || '').toLowerCase().indexOf(b) !== -1 ||
+      (o.ref_turbo || '').toLowerCase().indexOf(b) !== -1 ||
+      (o.notas || '').toLowerCase().indexOf(b) !== -1;
+
     var me = !e || o.estado === e;
     var mc = !c || (c === '__urgentes' ? o.urgente : o.categoria === c);
     var mi = !ini || o.data_recebido >= ini;
     var mf = !fim || o.data_recebido <= fim;
-    return mb && me && mc && mi && mf;
+    var msd = !semData || !o.data_recebido;
+
+    return mb && me && mc && mi && mf && msd;
   });
+
+  res.sort(compararObras);
+
+  var cont = document.getElementById('p-cont');
+  if (cont) cont.textContent = res.length + ' resultado(s)';
+  
+  var lista = document.getElementById('p-lista');
+  if (lista) lista.innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
+}
   res.sort(compararObras);
   document.getElementById('p-cont').textContent = res.length + ' resultado(s)';
   document.getElementById('p-lista').innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
