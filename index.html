@@ -624,7 +624,7 @@ async function renderInicio(m) {
     '</div>' +
     paginacao;
 }
-
+  
 function cardObra(o) {
   var pag = estadoPagamento(o);
   var mostrarPag = (o.valor_total > 0 || o.valor_pago > 0 || o.estado === 'Pronto' || o.estado === 'Entregue');
