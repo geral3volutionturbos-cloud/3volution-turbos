@@ -685,7 +685,7 @@ async function renderNova(m) {
       '<div><label>Telefone 2</label><input id="f-tel2"></div>' +
       '<div><label>NIF</label><input id="f-nif"></div>' +
     '</div>' +
-    '<label>Categoria</label><"f-cat">' +
+    '<label>Categoria</label><select id="f-cat">' +
       CATEGORIAS.map(function(c){ return '<option>' + c + '</option>'; }).join('') +
     '</select>' +
     '<label>Veículo</label><input id="f-veic">' +
@@ -703,7 +703,7 @@ async function renderNova(m) {
     '<button class="btn btn-primary" onclick="guardarNova()">Criar obra</button>';
   window._clientesCache = clientes;
 }
-
+  
 function procurarCliente(txt) {
   var lista = document.getElementById('f-cliente-lista');
   var clientes = (window._clientesCache || []).filter(function(c) {
