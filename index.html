@@ -733,7 +733,7 @@ async function guardarNova() {
   var dadosVerif = {
     cliente_telefone: telSep.tel1 || clienteTelefone,
     notas: document.getElementById('f-notas').value.trim(),
-    data_recebido: 
+    data_recebido: hoje()
   };
   var duplicados = await verificarDuplicado(dadosVerif);
   if (duplicados.length > 0) {
