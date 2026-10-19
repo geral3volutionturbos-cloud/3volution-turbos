@@ -231,7 +231,7 @@ function compararObras(a, b) {
   // 2. Separar as Entregues das Não Entregues
   var ea = a.data_entrega ? 1 : 0;
   var eb = b.data_entrega ? 1 : 0;
-  if (ea !== eb) return ea - eb; // Obras não entregues (0) ficam SEMPRE no topo
+  if (ea !== eb) return ea - eb;
 
   // 3. Ordenação por data (antigas ou recentes)
   var da = a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '1900-01-01');
@@ -241,7 +241,6 @@ function compararObras(a, b) {
     if (da > db) return -1;
     if (da < db) return 1;
   } else {
-    // 'antigas' (padrão)
     if (da < db) return -1;
     if (da > db) return 1;
   }
