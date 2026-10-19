@@ -773,7 +773,7 @@ async function guardarNova() {
     notas_pagamento: document.getElementById('f-notas-pag').value,
     notas: document.getElementById('f-notas').value,
     estado: 'Recebido',
-    data_recebido: 
+    data_recebido: hoje()
   });
   if (nova && nova.id) nav('obra', nova.id);
   else alert('Erro ao criar obra');
