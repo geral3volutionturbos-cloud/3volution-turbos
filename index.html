@@ -672,7 +672,7 @@ async function renderNova(m) {
       '<div><label>Telefone 2</label><input id="f-tel2"></div>' +
       '<div><label>NIF</label><input id="f-nif"></div>' +
     '</div>' +
-    '<label>Categoria</label><select id="f-cat">' +
+    '<label>Categoria</label><"f-cat">' +
       CATEGORIAS.map(function(c){ return '<option>' + c + '</option>'; }).join('') +
     '</select>' +
     '<label>Veículo</label><input id="f-veic">' +
@@ -923,14 +923,14 @@ async function editarObra(id) {
       '<label>Telefone</label><input id="e-tel" value="' + (o.cliente_telefone||'') + '">' +
 '<label>Telefone 2</label><input id="e-tel2" value="' + (o.cliente_telefone2||'') + '">' +
       '<label>NIF</label><input id="e-nif" value="' + (o.cliente_nif||'') + '">' +
-      '<label>Categoria</label><select id="e-cat">' + CATEGORIAS.map(function(c){ return '<option ' + (o.categoria===c?'selected':'') + '>' + c + '</option>'; }).join('') + '</select>' +
+      '<label>Categoria</label><"e-cat">' + CATEGORIAS.map(function(c){ return '<option ' + (o.categoria===c?'selected':'') + '>' + c + '</option>'; }).join('') + '</select>' +
       '<label>Veículo</label><input id="e-veic" value="' + (o.veiculo||'') + '">' +
       '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
       '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
       '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
       '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + (o.data_recebido||'') + '">' +
       '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
-      '<label>Estado</label><select id="e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
+      '<label>Estado</label><"e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
       '<label>Valor total (€)</label><input id="e-valor" type="number" step="0.01" value="' + (o.valor_total||'') + '">' +
       '<label>Valor pago (€)</label><input id="e-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '">' +
       '<label>Notas de pagamento</label><textarea id="e-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
@@ -992,6 +992,9 @@ async function renderPesquisar(m, filtroEstado) {
         '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.ini || '') + '"></div>' +
         '<div><span class="filtro-label">Até</span><input id="p-fim" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.fim || '') + '"></div>' +
       '</div>' +
+    '<button type="button" class="btn btn-sec btn-pequeno" onclick="toggleOrdem()" style="margin-top:12px;width:100%;justify-content:center">' +
+        (filtrosPesquisa.ordenacao === 'antigas' ? '⬆️ Ordem: Mais antigas' : '⬇️ Ordem: Mais recentes') +
+      '</button>' +
       '<button class="btn btn-sec" style="margin-top:12px;margin-bottom:0" onclick="limparFiltros()">Limpar filtros</button>' +
     '</div>' +
     '<p class="muted small" id="p-cont"></p>' +
