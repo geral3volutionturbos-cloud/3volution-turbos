@@ -228,7 +228,12 @@ function compararObras(a, b) {
   var ub = b.urgente ? 1 : 0;
   if (ua !== ub) return ub - ua;
 
-  // 2. Ordenação por data (recentes ou antigas)
+  // 2. Separar as Entregues das Não Entregues
+  var ea = a.data_entrega ? 1 : 0;
+  var eb = b.data_entrega ? 1 : 0;
+  if (ea !== eb) return ea - eb; // Obras não entregues (0) ficam SEMPRE no topo
+
+  // 3. Ordenação por data (antigas ou recentes)
   var da = a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '1900-01-01');
   var db = b.data_recebido || (b.created_at ? b.created_at.substring(0,10) : '1900-01-01');
 
@@ -236,24 +241,12 @@ function compararObras(a, b) {
     if (da > db) return -1;
     if (da < db) return 1;
   } else {
+    // 'antigas' (padrão)
     if (da < db) return -1;
     if (da > db) return 1;
   }
-  return 0;
-}
   
-function fmt(d) { if (!d) return 'sem data'; var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
-function hoje() { return new Date().toISOString().slice(0,10); }
-function fmtMoeda(v) { if (v === null || v === undefined || v === '') return '—'; return Number(v).toFixed(2).replace('.', ',') + ' €'; }
-
-function estadoPagamento(o) {
-  var total = Number(o.valor_total || 0);
-  var pago = Number(o.valor_pago || 0);
-  var falta = total - pago;
-  if (total === 0) return { classe: 'divida', texto: '—' };
-  if (pago >= total) return { classe: 'pago', texto: '✅ Pago (' + fmtMoeda(total) + ')' };
-  if (pago > 0) return { classe: 'parcial', texto: '🟡 Parcial · Falta ' + fmtMoeda(falta) };
-  return { classe: 'divida', texto: '💰 Em dívida · ' + fmtMoeda(falta) };
+  return 0;
 }
 
   // ============================================
