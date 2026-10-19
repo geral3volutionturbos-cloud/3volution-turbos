@@ -940,28 +940,41 @@ async function mudarEstado(id, estado) {
 async function editarObra(id) {
   var o = await getObra(id);
   var m = document.getElementById('main');
+  
+  var opcoesCategoria = CATEGORIAS.map(function(c){ 
+    return '<option ' + (o.categoria === c ? 'selected' : '') + '>' + c + '</option>'; 
+  }).join('');
+
+  var opcoesEstado = ESTADOS.map(function(e) { 
+    return '<option ' + (o.estado === e ? 'selected' : '') + '>' + e + '</option>'; 
+  }).join('');
+
   m.innerHTML =
     '<div class="cabecalho-obra">' +
       '<button class="voltar" onclick="nav(\'obra\',\'' + id + '\')">←</button>' +
-      '<div class="info"><div class="tag">EDITAR</div><div class="num">' + o.numero + '</div></div>' +
+      '<div class="info"><div class="tag">EDITAR</div><div class="num">' + esc(o.numero) + '</div></div>' +
     '</div>' +
     '<div class="card">' +
-      '<label>Nome do cliente</label><input id="e-nome" value="' + (o.cliente_nome||'') + '">' +
-      '<label>Telefone</label><input id="e-tel" value="' + (o.cliente_telefone||'') + '">' +
-'<label>Telefone 2</label><input id="e-tel2" value="' + (o.cliente_telefone2||'') + '">' +
-      '<label>NIF</label><input id="e-nif" value="' + (o.cliente_nif||'') + '">' +
-      '<label>Categoria</label><"e-cat">' + CATEGORIAS.map(function(c){ return '<option ' + (o.categoria===c?'selected':'') + '>' + c + '</option>'; }).join('') + '</select>' +
-      '<label>Veículo</label><input id="e-veic" value="' + (o.veiculo||'') + '">' +
-      '<label>Matrícula</label><input id="e-mat" value="' + (o.matricula||'') + '">' +
-      '<label>Motorização</label><input id="e-mot" value="' + (o.motorizacao||'') + '">' +
-      '<label>Ref. turbo</label><input id="e-ref" value="' + (o.ref_turbo||'') + '">' +
-      '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + (o.data_recebido||'') + '">' +
-      '<label>Data de entrega</label><input id="e-data" type="date" value="' + (o.data_entrega||'') + '">' +
-      '<label>Estado</label><"e-estado">' + ESTADOS.map(function(e) { return '<option ' + (o.estado===e?'selected':'') + '>' + e + '</option>'; }).join('') + '</select>' +
-      '<label>Valor total (€)</label><input id="e-valor" type="number" step="0.01" value="' + (o.valor_total||'') + '">' +
-      '<label>Valor pago (€)</label><input id="e-pago" type="number" step="0.01" value="' + (o.valor_pago||'') + '">' +
-      '<label>Notas de pagamento</label><textarea id="e-notas-pag" rows="2">' + (o.notas_pagamento||'') + '</textarea>' +
-      '<label>Notas</label><textarea id="e-notas" rows="3">' + (o.notas||'') + '</textarea>' +
+      '<label>Nome do cliente</label><input id="e-nome" value="' + esc(o.cliente_nome||'') + '">' +
+      '<label>Telefone</label><input id="e-tel" value="' + esc(o.cliente_telefone||'') + '">' +
+      '<label>Telefone 2</label><input id="e-tel2" value="' + esc(o.cliente_telefone2||'') + '">' +
+      '<label>NIF</label><input id="e-nif" value="' + esc(o.cliente_nif||'') + '">' +
+      
+      '<label>Categoria</label><select id="e-cat">' + opcoesCategoria + '</select>' +
+      
+      '<label>Veículo</label><input id="e-veic" value="' + esc(o.veiculo||'') + '">' +
+      '<label>Matrícula</label><input id="e-mat" value="' + esc(o.matricula||'') + '">' +
+      '<label>Motorização</label><input id="e-mot" value="' + esc(o.motorizacao||'') + '">' +
+      '<label>Ref. turbo</label><input id="e-ref" value="' + esc(o.ref_turbo||'') + '">' +
+      '<label>Data de receção</label><input id="e-data-rec" type="date" value="' + esc(o.data_recebido||'') + '">' +
+      '<label>Data de entrega</label><input id="e-data" type="date" value="' + esc(o.data_entrega||'') + '">' +
+      
+      '<label>Estado</label><select id="e-estado">' + opcoesEstado + '</select>' +
+      
+      '<label>Valor total (€)</label><input id="e-valor" type="number" step="0.01" value="' + esc(o.valor_total||'') + '">' +
+      '<label>Valor pago (€)</label><input id="e-pago" type="number" step="0.01" value="' + esc(o.valor_pago||'') + '">' +
+      '<label>Notas de pagamento</label><textarea id="e-notas-pag" rows="2">' + esc(o.notas_pagamento||'') + '</textarea>' +
+      '<label>Notas</label><textarea id="e-notas" rows="3">' + esc(o.notas||'') + '</textarea>' +
     '</div>' +
     '<div class="grid-info">' +
       '<button class="btn btn-sec" onclick="nav(\'obra\',\'' + id + '\')">Cancelar</button>' +
