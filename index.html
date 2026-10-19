@@ -1467,9 +1467,8 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 function abrirFiltroCat(cat) {
-  filtrosPesquisa = { busca: '', estado: '', categoria: cat, ini: '', fim: '', semData: false };
+filtrosPesquisa = { busca: '', estado: '', categoria: cat, ini: '', fim: '', semData: false, ordenacao: 'antigas' };
   nav('pesquisar');
-}
   
 async function carregarMaisInicio() {
   var cardsAntes = document.querySelectorAll('.obra').length;
