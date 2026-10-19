@@ -200,6 +200,16 @@ function normalizarNumero(t) {
   return (t || '').replace(/[\s\-\.\(\)]/g, '');
 }
 
+function estadoPagamento(o) {
+  var total = Number(o.valor_total || 0);
+  var pago = Number(o.valor_pago || 0);
+  var falta = total - pago;
+  if (total === 0) return { classe: 'divida', texto: '—' };
+  if (pago >= total) return { classe: 'pago', texto: '✅ Pago (' + fmtMoeda(total) + ')' };
+  if (pago > 0) return { classe: 'parcial', texto: '🟡 Parcial · Falta ' + fmtMoeda(falta) };
+  return { classe: 'divida', texto: '💰 Em dívida · ' + fmtMoeda(falta) };
+}
+  
 function whatsappUrl(telefone) {
   if (!telefone) return null;
   var t = telefone.replace(/\s/g, '');
