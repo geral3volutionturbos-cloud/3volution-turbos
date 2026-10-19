@@ -1050,6 +1050,19 @@ function filtrar() {
   if (lista) lista.innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
 }
 
+function toggleOrdem() {
+  if (filtrosPesquisa.ordenacao === 'recentes') {
+    filtrosPesquisa.ordenacao = 'antigas';
+  } else {
+    filtrosPesquisa.ordenacao = 'recentes';
+  }
+  filtrar();
+  var btn = document.querySelector('button[onclick="toggleOrdem()"]');
+  if (btn) {
+    btn.innerHTML = (filtrosPesquisa.ordenacao === 'antigas' ? '⬆️ Ordem: Mais antigas' : '⬇️ Ordem: Mais recentes');
+  }
+}
+  
 function limparFiltros() {
   filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '', semData: false, ordenacao: 'antigas' };
   document.getElementById('p-busca').value = '';
