@@ -907,7 +907,7 @@ async function mudarEstado(id, estado) {
   var o = await getObra(id);
   var data_entrega;
   if (estado === 'Entregue') {
-    data_entrega = o.data_entrega || ;
+    data_entrega = o.data_entrega || hoje();
   } else {
     data_entrega = null;  // se não é entregue, apaga a data
   }
