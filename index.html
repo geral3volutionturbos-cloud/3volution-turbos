@@ -563,10 +563,12 @@ async function renderInicio(m) {
   var POR_PAGINA = 20;
   var itemsAMostrar = paginaInicio * POR_PAGINA;
 
+var isRecentes = filtrosPesquisa.ordenacao === 'recentes';
+  
   var r = await sb.from('obras').select('*', { count: 'exact' })
     .in('estado', ['Recebido', 'Em reparação', 'Pronto'])
     .order('urgente', { ascending: false, nullsFirst: false })
-    .order('data_recebido', { ascending: true });
+    .order('data_recebido', { ascending: !isRecentes, nullsFirst: false });
 
   var todasAbertas = r.data || [];
   var totalAbertas = todasAbertas.length;
