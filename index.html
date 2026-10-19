@@ -74,7 +74,7 @@ h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .toggle-urg { background: #141414; border: 1px solid #262626; color: #fff; padding: 12px; border-radius: 12px; width: 100%; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 8px; text-align: left; }
 .toggle-urg.ativo { background: #e11d2e; border-color: #e11d2e; color: #fff; }
 .toggle-web.ativo { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
-input, select, textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }
+input, , textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }
 label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .campo-info { margin-bottom: 12px; }
 .campo-info .lbl { color: #9ca3af; font-size: 14px; }
@@ -982,10 +982,11 @@ async function renderPesquisar(m, filtroEstado) {
         ESTADOS.map(function(e) { return '<option' + ((filtroEstado === e || filtrosPesquisa.estado === e) ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
       '</select>' +
       '<label class="filtro-label">Categoria</label>' +
-      '<select id="p-cat" onchange="filtrar()"><option value="">Todas as categorias</option>' +
-  '<option value="__urgentes"' + (filtrosPesquisa.categoria === '__urgentes' ? ' selected' : '') + '>🔴 Urgentes</option>' +
-  CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
-'</select>' +
+'<select id="p-cat" onchange="filtrar()"><option value="">Todas as categorias</option>' +
+        '<option value="__urgentes"' + (filtrosPesquisa.categoria === '__urgentes' ? ' selected' : '') + '>🔴 Urgentes</option>' +
+        '<option value="__web"' + (filtrosPesquisa.categoria === '__web' ? ' selected' : '') + '>🌐 Venda Web</option>' +
+        CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
+      '</select>' +
       '<label class="filtro-label">Período (data de receção)</label>' +
       '<div class="filtros-data">' +
         '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.ini || '') + '"></div>' +
