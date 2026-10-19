@@ -1285,8 +1285,7 @@ async function renderRelatorios(m) {
       var d = new Date(o.data_entrega + 'T00:00:00');
       return d.getFullYear() === anoAtual && d.getMonth() === mesAtual;
     });
-  } 
-  else if (filtroRelatorio === '3m') {
+  } else if (filtroRelatorio === '3m') {
     var tresMesesAtras = new Date(anoAtual, mesAtual - 2, 1);
     obrasFiltradas = obras.filter(function(o) {
       if (!o.data_entrega) return false;
