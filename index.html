@@ -74,8 +74,7 @@ h3 { font-size: 20px; font-weight: 700; margin: 20px 0 12px; }
 .toggle-urg { background: #141414; border: 1px solid #262626; color: #fff; padding: 12px; border-radius: 12px; width: 100%; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 8px; text-align: left; }
 .toggle-urg.ativo { background: #e11d2e; border-color: #e11d2e; color: #fff; }
 .toggle-web.ativo { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
-input, , textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }
-label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
+input, select, textarea { background: #141414; border: 1px solid #262626; color: #fff; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-family: inherit; margin-bottom: 12px; }label { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
 .campo-info { margin-bottom: 12px; }
 .campo-info .lbl { color: #9ca3af; font-size: 14px; }
 .campo-info .val { font-weight: 500; margin-top: 2px; }
@@ -206,7 +205,7 @@ function fmt(d) {
   return p[2] + '/' + p[1] + '/' + p[0]; 
 }
 
-function hoje() { 
+function  { 
   return new Date().toISOString().slice(0,10); 
 }
 
@@ -734,7 +733,7 @@ async function guardarNova() {
   var dadosVerif = {
     cliente_telefone: telSep.tel1 || clienteTelefone,
     notas: document.getElementById('f-notas').value.trim(),
-    data_recebido: hoje()
+    data_recebido: 
   };
   var duplicados = await verificarDuplicado(dadosVerif);
   if (duplicados.length > 0) {
@@ -774,7 +773,7 @@ async function guardarNova() {
     notas_pagamento: document.getElementById('f-notas-pag').value,
     notas: document.getElementById('f-notas').value,
     estado: 'Recebido',
-    data_recebido: hoje()
+    data_recebido: 
   });
   if (nova && nova.id) nav('obra', nova.id);
   else alert('Erro ao criar obra');
@@ -908,7 +907,7 @@ async function mudarEstado(id, estado) {
   var o = await getObra(id);
   var data_entrega;
   if (estado === 'Entregue') {
-    data_entrega = o.data_entrega || hoje();
+    data_entrega = o.data_entrega || ;
   } else {
     data_entrega = null;  // se não é entregue, apaga a data
   }
