@@ -248,7 +248,7 @@ function inicioFimMes(ano, mes) {
 }
   
 function compararObras(a, b) {
-  // 1. Separar as Entregues das Não Entregues (Não entregues SEMPRE no topo)
+  // 1. Separar as Entregues das Não Entregues
   var ea = a.data_entrega ? 1 : 0;
   var eb = b.data_entrega ? 1 : 0;
   if (ea !== eb) return ea - eb;
@@ -260,9 +260,11 @@ function compararObras(a, b) {
     if (ua !== ub) return ub - ua;
   }
 
-  // 3. Definição das datas para ordenação
-  var da = a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '1900-01-01');
-  var db = b.data_recebido || (b.created_at ? b.created_at.substring(0,10) : '1900-01-01');
+  // 3. Escolher a data para ordenar:
+  // Se a obra está ENTREGUE, usa a data de entrega.
+  // Se NÃO está entregue, usa a data de receção.
+  var da = ea ? a.data_entrega : (a.data_recebido || (a.created_at ? a.created_at.substring(0,10) : '1900-01-01'));
+  var db = eb ? b.data_entrega : (b.data_recebido || (b.created_at ? b.created_at.substring(0,10) : '1900-01-01'));
 
   // 4. Ordenação por data (antigas ou recentes)
   if (filtrosPesquisa.ordenacao === 'recentes') {
@@ -273,7 +275,7 @@ function compararObras(a, b) {
     if (da > db) return 1;
   }
 
-  // 5. DESEMPATE: Se a data for igual, ordena pelo número da obra
+  // 5. Desempate pelo número da obra caso as datas sejam iguais
   var na = a.numero || '';
   var nb = b.numero || '';
   if (filtrosPesquisa.ordenacao === 'recentes') {
