@@ -1075,6 +1075,15 @@ function toggleOrdem() {
   }
 }
   
+function toggleOrdemInicio() {
+  if (filtrosPesquisa.ordenacao === 'recentes') {
+    filtrosPesquisa.ordenacao = 'antigas';
+  } else {
+    filtrosPesquisa.ordenacao = 'recentes';
+  }
+  renderInicio(document.getElementById('main'));
+}
+  
 function limparFiltros() {
   filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '', semData: false, ordenacao: 'antigas' };
   document.getElementById('p-busca').value = '';
