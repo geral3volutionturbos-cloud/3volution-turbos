@@ -1008,8 +1008,6 @@ function filtrar() {
   var elSemData = document.getElementById('p-sem-data');
   var semData = elSemData ? elSemData.checked : false;
   
-  var elOrdem = document.getElementById('p-ordem'); 
-  // Se o botão antigo (select) já não existir, mantém o que está na memória
   var ordem = filtrosPesquisa.ordenacao || 'antigas'; 
 
   filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim, semData: semData, ordenacao: ordem };
