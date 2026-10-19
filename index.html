@@ -984,18 +984,7 @@ async function renderPesquisar(m, filtroEstado) {
   filtrar();
 }
 
-function () {
-  if (filtrosPesquisa.ordenacao === 'recentes') {
-    filtrosPesquisa.ordenacao = 'antigas';
-  } else {
-    filtrosPesquisa.ordenacao = 'recentes';
-  }
-  filtrar();
-  var btn = document.querySelector('button[onclick="toggleOrdem()"]');
-  if (btn) {
-    btn.innerHTML = (filtrosPesquisa.ordenacao === 'antigas' ? '⬆️ Ordem: Mais antigas' : '⬇️ Ordem: Mais recentes');
-  }
-}
+
   
 function filtrar() {
   var b = (document.getElementById('p-busca').value || '').toLowerCase();
