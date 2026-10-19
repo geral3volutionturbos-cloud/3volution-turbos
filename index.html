@@ -969,12 +969,12 @@ async function renderPesquisar(m, filtroEstado) {
         CATEGORIAS.map(function(c) { return '<option' + (filtrosPesquisa.categoria === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') +
       '</select>' +
       '<label class="filtro-label">Período (data de receção)</label>' +
-      '<div class="filtros-data">' +
+'<div class="filtros-data">' +
         '<div><span class="filtro-label">De</span><input id="p-ini" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.ini || '') + '"></div>' +
         '<div><span class="filtro-label">Até</span><input id="p-fim" type="date" onchange="filtrar()" value="' + (filtrosPesquisa.fim || '') + '"></div>' +
       '</div>' +
-    '<button type="button" class="btn btn-sec btn-pequeno" onclick="toggleOrdem()" style="margin-top:12px;width:100%;justify-content:center">' +
-        (filtrosPesquisa.ordenacao === 'antigas' ? '⬆️ Ordem: Mais antigas' : '⬇️ Ordem: Mais recentes') +
+      '<button type="button" class="btn btn-sec" style="margin-top:12px;margin-bottom:0" onclick="toggleOrdem()">' +
+        (filtrosPesquisa.ordenacao === 'recentes' ? '⬇️ Ordem: Mais recentes' : '⬆️ Ordem: Mais antigas') +
       '</button>' +
       '<button class="btn btn-sec" style="margin-top:12px;margin-bottom:0" onclick="limparFiltros()">Limpar filtros</button>' +
     '</div>' +
@@ -984,7 +984,7 @@ async function renderPesquisar(m, filtroEstado) {
   filtrar();
 }
 
-function toggleOrdem() {
+function () {
   if (filtrosPesquisa.ordenacao === 'recentes') {
     filtrosPesquisa.ordenacao = 'antigas';
   } else {
