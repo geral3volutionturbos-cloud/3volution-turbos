@@ -1510,11 +1510,12 @@ async function toggleVendaWebCard(id, valor) {
     }
   }
 }
-  
+
 async function toggleUrgente(id, valor) {
   await updateObra(id, { urgente: valor });
   renderObra(document.getElementById('main'), id);
 }
+
 async function toggleVendaWeb(id, valor) {
   await updateObra(id, { venda_web: valor });
   renderObra(document.getElementById('main'), id);
