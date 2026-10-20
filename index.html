@@ -651,10 +651,10 @@ var isRecentes = filtrosPesquisa.ordenacao === 'recentes';
   
 function cardObra(o) {
   var pag = estadoPagamento(o);
-  var mostrarPag = (o.valor_total > 0 || o.valor_pago > 0 || o.estado === 'Pronto' || o.estado === 'Entregue');
+  var mostrarPag = (Number(o.valor_total) > 0 || Number(o.valor_pago) > 0 || o.estado === 'Pronto' || o.estado === 'Entregue');
 
   var badges = '';
-  badges += '<span class="' + (o.urgente ? 'badge-urgente-on' : 'badge-urgente-off') + '" onclick="event.stopPropagation();Card(\'' + o.id + '\',' + (!o.urgente) + ')">' + (o.urgente ? '🔴 URG' : '⚪ URG') + '</span>';
+  badges += '<span class="' + (o.urgente ? 'badge-urgente-on' : 'badge-urgente-off') + '" onclick="event.stopPropagation();toggleUrgenteCard(\'' + o.id + '\',' + (!o.urgente) + ')">' + (o.urgente ? '🔴 URG' : '⚪ URG') + '</span>';
   badges += '<span class="' + (o.venda_web ? 'badge-web-on' : 'badge-web-off') + '" onclick="event.stopPropagation();toggleVendaWebCard(\'' + o.id + '\',' + (!o.venda_web) + ')">' + (o.venda_web ? '🌐 WEB' : '⚪ WEB') + '</span>';
 
   var dataRec = o.data_recebido ? fmt(o.data_recebido) : '—';
