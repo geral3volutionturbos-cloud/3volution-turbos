@@ -165,6 +165,11 @@ var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 var R2_PUBLIC_URL = 'https://pub-ef936f7a87a24d2ba04402e6426351fa.r2.dev';
 // ============================================
 
+function normalizarTexto(t) {
+  if (!t) return '';
+  return t.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+  
 var sb = null;
 try {
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
