@@ -1051,7 +1051,7 @@ async function renderPesquisar(m, filtroEstado) {
 }
 
   
-function filtrar() {
+() {
   var b = normalizarTexto(document.getElementById('p-busca').value);
   var bNum = normalizarNumero(b);
   var e = document.getElementById('p-estado').value;
@@ -1161,17 +1161,17 @@ function cardCliente(c) {
 }
 
 function filtrarClientesLista(txt) {
-  var t = (txt || '').toLowerCase();
+  var t = normalizarTexto(txt);
   var tNum = normalizarNumero(t);
   var clientes = (window._clientesCache2 || []).filter(function(c) {
     var telNorm = normalizarNumero(c.telefone || '');
     var tel2Norm = normalizarNumero(c.telefone2 || '');
     var nifNorm = normalizarNumero(c.nif || '');
-    return c.nome.toLowerCase().indexOf(t) !== -1 ||
+    return normalizarTexto(c.nome).indexOf(t) !== -1 ||
       telNorm.indexOf(tNum) !== -1 ||
       tel2Norm.indexOf(tNum) !== -1 ||
       nifNorm.indexOf(tNum) !== -1 ||
-      (c.email||'').toLowerCase().indexOf(t) !== -1;
+      normalizarTexto(c.email).indexOf(t) !== -1;
   });
   document.getElementById('cli-lista').innerHTML = clientes.map(cardCliente).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
 }
