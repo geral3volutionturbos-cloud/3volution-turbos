@@ -1060,7 +1060,7 @@ async function renderPesquisar(m, filtroEstado) {
   
 function filtrar() {
   var b = normalizarTexto(document.getElementById('p-busca').value);
-  var bNum = normalizarNumero(b);
+  var bNum = normalizarNumero(b.trim());
   var e = document.getElementById('p-estado').value;
   var c = document.getElementById('p-cat').value;
   var ini = document.getElementById('p-ini').value;
