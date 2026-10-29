@@ -165,7 +165,15 @@ select option { background-color: #141414; color: #fff; }
     <button onclick="navBottom('pesquisar')" id="bn-pesquisar">🔍<span>Pesquisar</span></button>
   </nav>
 </div>
-
+  
+<!-- Ecrã da Galeria de Fotos -->
+<div id="foto-modal" class="foto-modal" onclick="fecharFoto(event)" style="display:none">
+  <button class="foto-modal-close" onclick="fecharFoto(event)">✕</button>
+  <button class="foto-modal-prev" onclick="mudarFoto(event, -1)">❮</button>
+  <img id="foto-modal-img" src="" onclick="event.stopPropagation()">
+  <button class="foto-modal-next" onclick="mudarFoto(event, 1)">❯</button>
+</div>
+  
 <script>
 // ============================================
 // CONFIGURAÇÃO
@@ -1620,6 +1628,8 @@ async function toggleVendaWeb(id, valor) {
   await updateObra(id, { venda_web: valor });
   renderObra(document.getElementById('main'), id);
 }
+
+  
 </script>
    
 </body>
