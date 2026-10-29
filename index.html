@@ -115,6 +115,16 @@ select option { background-color: #141414; color: #fff; }
 .valor-linha input { margin-bottom: 0; }
 .filtros-data { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .filtro-label { color: #9ca3af; font-size: 12px; margin-bottom: 4px; display: block; }
+
+/* Estilos da Galeria (Lightbox) */
+.foto-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; }
+.foto-modal img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.foto-modal-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 1000; }
+.foto-modal-prev, .foto-modal-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border: none; color: #fff; width: 44px; height: 80px; font-size: 24px; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.foto-modal-prev { left: 10px; border-radius: 0 8px 8px 0; }
+.foto-modal-next { right: 10px; border-radius: 8px 0 0 8px; }
+@media (max-width: 640px) { .foto-modal-prev, .foto-modal-next { display: none; } }
+  
 </style>
 </head>
 <body>
