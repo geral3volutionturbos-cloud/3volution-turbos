@@ -203,13 +203,7 @@ function esc(s) {
   
 function normalizarNumero(t) {
   if (!t) return '';
-  // Remove tudo o que não for número
-  var limpo = String(t).replace(/\D/g, '');
-  // Se o número tiver o indicativo PT (351) à frente e for muito longo, corta o 351
-  if (limpo.length > 9 && limpo.startsWith('351')) {
-    return limpo.substring(3);
-  }
-  return limpo;
+  return String(t).replace(/\D/g, '');
 }
 
 function fmt(d) { 
@@ -1059,8 +1053,10 @@ async function renderPesquisar(m, filtroEstado) {
 
   
 function filtrar() {
-  var b = normalizarTexto(document.getElementById('p-busca').value);
-  var bNum = normalizarNumero(b.trim());
+  var texto = document.getElementById('p-busca').value.trim();
+  var b = normalizarTexto(texto);
+  var bNum = normalizarNumero(texto);
+  
   var e = document.getElementById('p-estado').value;
   var c = document.getElementById('p-cat').value;
   var ini = document.getElementById('p-ini').value;
@@ -1068,31 +1064,44 @@ function filtrar() {
   
   var elSemData = document.getElementById('p-sem-data');
   var semData = elSemData ? elSemData.checked : false;
-  
   var ordem = filtrosPesquisa.ordenacao || 'antigas'; 
 
   filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim, semData: semData, ordenacao: ordem };
 
+  // Se a pesquisa estiver vazia, não perde tempo a verificar campo a campo
   var res = (window._todasObras || []).filter(function(o) {
+    if (!b) return true; // Se não há pesquisa, mostra tudo (respeitando os filtros abaixo)
+
     var telNorm = normalizarNumero(o.cliente_telefone || '');
     var tel2Norm = normalizarNumero(o.cliente_telefone2 || '');
     var nifNorm = normalizarNumero(o.cliente_nif || '');
     var matNorm = normalizarNumero(o.matricula || '');
     var numNorm = normalizarNumero(o.numero || '');
-    
-    var mb = !b ||
-      normalizarTexto(o.numero).indexOf(b) !== -1 ||
-      numNorm.indexOf(bNum) !== -1 ||
-      normalizarTexto(o.cliente_nome).indexOf(b) !== -1 ||
-      telNorm.indexOf(bNum) !== -1 ||
-      tel2Norm.indexOf(bNum) !== -1 ||
-      nifNorm.indexOf(bNum) !== -1 ||
-      normalizarTexto(o.matricula).indexOf(bNum) !== -1 ||
-      normalizarTexto(o.matricula).indexOf(b) !== -1 ||
-      normalizarTexto(o.veiculo).indexOf(b) !== -1 ||
-      normalizarTexto(o.ref_turbo).indexOf(b) !== -1 ||
-      normalizarTexto(o.notas).indexOf(b) !== -1;
 
+    var mb = false;
+
+    // 1. Pesquisa por texto (Nome, Veículo, Notas, Ref)
+    if (b.length > 1) { 
+      if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
+      else if (normalizarTexto(o.veiculo).indexOf(b) !== -1) mb = true;
+      else if (normalizarTexto(o.notas).indexOf(b) !== -1) mb = true;
+      else if (normalizarTexto(o.ref_turbo).indexOf(b) !== -1) mb = true;
+      else if (normalizarTexto(o.numero).indexOf(b) !== -1) mb = true;
+      else if (normalizarTexto(o.matricula).indexOf(b) !== -1) mb = true;
+    } else {
+      if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
+    }
+
+    // 2. Pesquisa por número exato ou parte do número (Só se bNum não estiver vazio)
+    if (!mb && bNum.length >= 3) {
+      if (telNorm.indexOf(bNum) !== -1) mb = true;
+      else if (tel2Norm.indexOf(bNum) !== -1) mb = true;
+      else if (nifNorm.indexOf(bNum) !== -1) mb = true;
+      else if (matNorm.indexOf(bNum) !== -1) mb = true;
+      else if (numNorm.indexOf(bNum) !== -1) mb = true;
+    }
+
+    // 3. Aplicar os restantes filtros (Estado, Categoria, Datas)
     var me = !e || o.estado === e;
     var mc = !c || (c === '__urgentes' ? o.urgente : (c === '__web' ? o.venda_web : o.categoria === c));
     var mi = !ini || o.data_recebido >= ini;
