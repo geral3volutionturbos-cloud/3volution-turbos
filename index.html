@@ -1683,6 +1683,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+document.addEventListener('click', function(e) {
+  var lista = document.getElementById('f-cliente-lista');
+  var input = document.getElementById('f-cliente-busca');
+  var botaoCriar = document.querySelector('button[onclick*="cliente-editar"]'); // O botão de criar novo cliente
+  
+  if (lista && lista.classList.contains('show')) {
+    // Se o clique não foi na lista, nem no input, nem no botão de criar cliente, fecha a lista
+    if (!lista.contains(e.target) && e.target !== input && (!botaoCriar || !botaoCriar.contains(e.target))) {
+      lista.classList.remove('show');
+    }
+  }
+});
   
 </script>
    
