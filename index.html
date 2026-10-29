@@ -1084,50 +1084,59 @@ function filtrar() {
   
   var elSemData = document.getElementById('p-sem-data');
   var semData = elSemData ? elSemData.checked : false;
+  
   var ordem = filtrosPesquisa.ordenacao || 'antigas'; 
 
+  // Atualiza as variáveis globais para não perder o estado
   filtrosPesquisa = { busca: b, estado: e, categoria: c, ini: ini, fim: fim, semData: semData, ordenacao: ordem };
 
-  // Se a pesquisa estiver vazia, não perde tempo a verificar campo a campo
   var res = (window._todasObras || []).filter(function(o) {
-    if (!b) return true; // Se não há pesquisa, mostra tudo (respeitando os filtros abaixo)
+    // === 1. FILTRO DE TEXTO / NÚMERO ===
+    var mb = true; // Se não houver texto, passa à frente
+    if (b) {
+      mb = false;
+      var telNorm = normalizarNumero(o.cliente_telefone || '');
+      var tel2Norm = normalizarNumero(o.cliente_telefone2 || '');
+      var nifNorm = normalizarNumero(o.cliente_nif || '');
+      var matNorm = normalizarNumero(o.matricula || '');
+      var numNorm = normalizarNumero(o.numero || '');
 
-    var telNorm = normalizarNumero(o.cliente_telefone || '');
-    var tel2Norm = normalizarNumero(o.cliente_telefone2 || '');
-    var nifNorm = normalizarNumero(o.cliente_nif || '');
-    var matNorm = normalizarNumero(o.matricula || '');
-    var numNorm = normalizarNumero(o.numero || '');
+      // Pesquisa por texto (Nome, Veículo, Notas, Ref, Nº OT)
+      if (b.length > 1) { 
+        if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
+        else if (normalizarTexto(o.veiculo).indexOf(b) !== -1) mb = true;
+        else if (normalizarTexto(o.notas).indexOf(b) !== -1) mb = true;
+        else if (normalizarTexto(o.ref_turbo).indexOf(b) !== -1) mb = true;
+        else if (normalizarTexto(o.numero).indexOf(b) !== -1) mb = true;
+        else if (normalizarTexto(o.matricula).indexOf(b) !== -1) mb = true;
+      } else {
+        if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
+      }
 
-    var mb = false;
-
-    // 1. Pesquisa por texto (Nome, Veículo, Notas, Ref)
-    if (b.length > 1) { 
-      if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
-      else if (normalizarTexto(o.veiculo).indexOf(b) !== -1) mb = true;
-      else if (normalizarTexto(o.notas).indexOf(b) !== -1) mb = true;
-      else if (normalizarTexto(o.ref_turbo).indexOf(b) !== -1) mb = true;
-      else if (normalizarTexto(o.numero).indexOf(b) !== -1) mb = true;
-      else if (normalizarTexto(o.matricula).indexOf(b) !== -1) mb = true;
-    } else {
-      if (normalizarTexto(o.cliente_nome).indexOf(b) !== -1) mb = true;
+      // Pesquisa por número (Só se bNum não estiver vazio e tiver pelo menos 3 dígitos)
+      if (!mb && bNum.length >= 3) {
+        if (telNorm.indexOf(bNum) !== -1) mb = true;
+        else if (tel2Norm.indexOf(bNum) !== -1) mb = true;
+        else if (nifNorm.indexOf(bNum) !== -1) mb = true;
+        else if (matNorm.indexOf(bNum) !== -1) mb = true;
+        else if (numNorm.indexOf(bNum) !== -1) mb = true;
+      }
     }
 
-    // 2. Pesquisa por número exato ou parte do número (Só se bNum não estiver vazio)
-    if (!mb && bNum.length >= 3) {
-      if (telNorm.indexOf(bNum) !== -1) mb = true;
-      else if (tel2Norm.indexOf(bNum) !== -1) mb = true;
-      else if (nifNorm.indexOf(bNum) !== -1) mb = true;
-      else if (matNorm.indexOf(bNum) !== -1) mb = true;
-      else if (numNorm.indexOf(bNum) !== -1) mb = true;
-    }
-
-    // 3. Aplicar os restantes filtros (Estado, Categoria, Datas)
+    // === 2. FILTROS DROPDOWN (Estado e Categoria) ===
     var me = !e || o.estado === e;
-    var mc = !c || (c === '__urgentes' ? o.urgente : (c === '__web' ? o.venda_web : o.categoria === c));
+    
+    // Lógica de categorias (inclui Urgentes e Web)
+    var mc = !c || (c === '__urgentes' ? o.urgente === true : (c === '__web' ? o.venda_web === true : o.categoria === c));
+
+    // === 3. FILTROS DE DATA ===
     var mi = !ini || o.data_recebido >= ini;
     var mf = !fim || o.data_recebido <= fim;
+    
+    // === 4. FILTRO DE SEM DATA ===
     var msd = !semData || !o.data_recebido;
 
+    // O resultado final: tem de passar em TODOS os filtros
     return mb && me && mc && mi && mf && msd;
   });
 
@@ -1138,19 +1147,6 @@ function filtrar() {
   
   var lista = document.getElementById('p-lista');
   if (lista) lista.innerHTML = res.map(cardObra).join('') || '<p class="muted small" style="text-align:center;padding:20px">Nada encontrado.</p>';
-}
-
-function toggleOrdem() {
-  if (filtrosPesquisa.ordenacao === 'recentes') {
-    filtrosPesquisa.ordenacao = 'antigas';
-  } else {
-    filtrosPesquisa.ordenacao = 'recentes';
-  }
-  filtrar();
-  var btn = document.querySelector('button[onclick="toggleOrdem()"]');
-  if (btn) {
-    btn.innerHTML = (filtrosPesquisa.ordenacao === 'antigas' ? '⬆️ Ordem: Mais antigas' : '⬇️ Ordem: Mais recentes');
-  }
 }
   
 function toggleOrdemInicio() {
