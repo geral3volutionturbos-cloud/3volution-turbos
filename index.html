@@ -200,6 +200,8 @@ var CATEGORIAS = ['Reparações de Turbos', 'Aplicação de Turbos', 'Peças / T
 var userAtual = null;
 var paginaAnterior = 'inicio';
 var paginaAtual = 'inicio';
+var galeriaFotos = [];
+var galeriaIndex = 0;
 var paginaInicio = 1;
 var filtrosPesquisa = { busca: '', estado: '', categoria: '', ini: '', fim: '', semData: false, ordenacao: 'antigas' };
 
@@ -929,7 +931,7 @@ function renderFotos(obraId, tipo, fotos) {
   var html = '<div class="sub-titulo">' + (tipo === 'antes' ? '📷 Antes' : '📷 Depois') + '</div>';
   html += '<div class="fotos-grid">';
   fotos.forEach(function(f) {
-    html += '<div class="foto-item"><img src="' + f.url + '" onclick="window.open(\'' + f.url + '\',\'_blank\')"><button class="remover" onclick="apagarFoto(\'' + f.id + '\',\'' + obraId + '\')">✕</button></div>';
+  html += '<div class="foto-item"><img src="' + f.url + '" onclick="abrirGaleria(this, \'' + obraId + '\', \'' + tipo + '\')"><button class="remover" onclick="apagarFoto(\'' + f.id + '\',\'' + obraId + '\')">✕</button></div>';
   });
   html += '<label class="foto-add"><input type="file" accept="image/*" class="foto-input" onchange="enviarFoto(event,\'' + obraId + '\',\'' + tipo + '\')"><span style="font-size: 24px">+</span><span>Adicionar</span></label>';
   html += '</div>';
@@ -1628,7 +1630,59 @@ async function toggleVendaWeb(id, valor) {
   await updateObra(id, { venda_web: valor });
   renderObra(document.getElementById('main'), id);
 }
+function abrirGaleria(imgClicada, obraId, tipo) {
+  var titulos = document.querySelectorAll('.sub-titulo');
+  var gridAlvo = null;
+  
+  for (var i = 0; i < titulos.length; i++) {
+    var texto = titulos[i].textContent;
+    if ((tipo === 'antes' && texto.indexOf('Antes') !== -1) || 
+        (tipo === 'depois' && texto.indexOf('Depois') !== -1)) {
+      gridAlvo = titulos[i].nextElementSibling;
+      break;
+    }
+  }
+  
+  if (!gridAlvo) return;
+  
+  var imgs = gridAlvo.querySelectorAll('img');
+  galeriaFotos = [];
+  for (var j = 0; j < imgs.length; j++) {
+    galeriaFotos.push(imgs[j].src);
+  }
+  
+  galeriaIndex = Array.from(imgs).indexOf(imgClicada);
+  if (galeriaIndex === -1) galeriaIndex = 0;
 
+  document.getElementById('foto-modal-img').src = galeriaFotos[galeriaIndex];
+  document.getElementById('foto-modal').style.display = 'flex';
+}
+
+function fecharFoto(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('foto-modal').style.display = 'none';
+}
+
+function mudarFoto(e, direcao) {
+  if (e) e.stopPropagation();
+  galeriaIndex += direcao;
+  if (galeriaIndex < 0) galeriaIndex = galeriaFotos.length - 1;
+  if (galeriaIndex >= galeriaFotos.length) galeriaIndex = 0;
+  document.getElementById('foto-modal-img').src = galeriaFotos[galeriaIndex];
+}
+
+var touchStartX = 0;
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('foto-modal');
+  if (modal) {
+    modal.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; });
+    modal.addEventListener('touchend', function(e) {
+      var touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) mudarFoto(null, 1);
+      if (touchEndX > touchStartX + 50) mudarFoto(null, -1);
+    });
+  }
+});
   
 </script>
    
