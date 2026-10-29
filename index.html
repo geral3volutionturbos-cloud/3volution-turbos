@@ -202,7 +202,14 @@ function esc(s) {
 }
   
 function normalizarNumero(t) {
-  return (t || '').replace(/[\s\-\.\(\)]/g, '');
+  if (!t) return '';
+  // Remove tudo o que não for número
+  var limpo = String(t).replace(/\D/g, '');
+  // Se o número tiver o indicativo PT (351) à frente e for muito longo, corta o 351
+  if (limpo.length > 9 && limpo.startsWith('351')) {
+    return limpo.substring(3);
+  }
+  return limpo;
 }
 
 function fmt(d) { 
