@@ -1071,6 +1071,14 @@ async function renderPesquisar(m, filtroEstado) {
   filtrar();
 }
 
+  function toggleOrdem() {
+  if (filtrosPesquisa.ordenacao === 'recentes') {
+    filtrosPesquisa.ordenacao = 'antigas';
+  } else {
+    filtrosPesquisa.ordenacao = 'recentes';
+  }
+  renderPesquisar(document.getElementById('main'));
+}
   
 function filtrar() {
   var texto = document.getElementById('p-busca').value.trim();
