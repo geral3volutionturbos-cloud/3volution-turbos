@@ -124,6 +124,13 @@ select option { background-color: #141414; color: #fff; }
 .foto-modal-prev { left: 10px; border-radius: 0 8px 8px 0; }
 .foto-modal-next { right: 10px; border-radius: 8px 0 0 8px; }
 @media (max-width: 640px) { .foto-modal-prev, .foto-modal-next { display: none; } }
+
+.btn-destaque-pagamento {
+  border: 2px solid #e11d2e !important;
+  background: rgba(225, 29, 46, 0.1) !important;
+  color: #e11d2e !important;
+  font-weight: 700 !important;
+}
   
 </style>
 </head>
@@ -886,7 +893,7 @@ async function renderObra(m, id) {
       '</div>' +
       '<label>Notas de pagamento</label><textarea id="p-notas-pag" rows="2">' + esc(o.notas_pagamento||'') + '</textarea>' +
       '<div id="pag-msg" class="muted small" style="min-height:18px;margin-bottom:8px;text-align:center"></div>' +
-      '<button class="btn btn-sec" onclick="guardarPagamento(\'' + id + '\')">Guardar pagamento</button>' +
+      '<button class="btn btn-sec btn-destaque-pagamento" onclick="guardarPagamento(\'' + id + '\')">Guardar pagamento</button>' +
     '</div>' +
     '<div class="card">' +
       '<h3 style="margin:0 0 12px">🏷️ Marcações</h3>' +
@@ -956,11 +963,25 @@ async function apagarFoto(id, obraId) {
 async function mudarEstado(id, estado) {
   var o = await getObra(id);
   var data_entrega;
+
   if (estado === 'Entregue') {
+    var total = Number(o.valor_total || 0);
+    var pago = Number(o.valor_pago || 0);
+    var falta = total - pago;
+
+    // Se tem valor total e não está totalmente pago
+    if (total > 0 && falta > 0.01) {
+      var msg = '⚠️ De certeza que pretende assinalar a obra como Entregue sem o pagamento total registado?\n\n(Falta receber: ' + fmtMoeda(falta) + ')';
+      
+      if (!confirm(msg)) {
+        return; // Se clicar em Cancelar, não faz nada
+      }
+    }
     data_entrega = o.data_entrega || hoje();
   } else {
-    data_entrega = null;  // se não é entregue, apaga a data
+    data_entrega = null;
   }
+
   await updateObra(id, { estado: estado, data_entrega: data_entrega });
   renderObra(document.getElementById('main'), id);
 }
