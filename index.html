@@ -641,7 +641,8 @@ var isRecentes = filtrosPesquisa.ordenacao === 'recentes';
     '<div class="lbl">🔴 Urgentes</div>' +
   '</div>';
 
-  var cardsCategoria = CATEGORIAS.map(function(cat) {
+  // Cards de categoria — Mecânica é substituída pelo card WEB
+  var cardsCategoria = CATEGORIAS.filter(function(cat) { return cat !== 'Mecânica'; }).map(function(cat) {
     var n = contagensCat[cat];
     var op = n > 0 ? '' : 'opacity:0.5;';
     return '<div class="stat" onclick="abrirFiltroCat(\'' + cat.replace(/'/g, "\\'") + '\')" style="cursor:pointer;' + op + '">' +
@@ -649,6 +650,16 @@ var isRecentes = filtrosPesquisa.ordenacao === 'recentes';
       '<div class="lbl">' + cat + '</div>' +
     '</div>';
   }).join('');
+
+  // Card WEB (substitui a categoria Mecânica no ecrã inicial)
+  var opWeb = totalWeb > 0 ? '' : 'opacity:0.5;';
+  var cardWeb = '<div class="stat" onclick="abrirFiltroCat(\'__web\')" style="cursor:pointer;border-color:#1d4ed8;' + opWeb + '">' +
+    '<div class="num" style="color:#93c5fd">' + totalWeb + '</div>' +
+    '<div class="lbl">🌐 WEB</div>' +
+  '</div>';
+
+  // Junta o card WEB logo a seguir aos urgentes
+  var cardsCategoriaComWeb = cardWeb + cardsCategoria;
 
   var paginacao = '';
   if (haMais) {
