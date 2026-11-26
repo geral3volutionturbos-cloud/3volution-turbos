@@ -755,9 +755,12 @@ async function renderNova(m) {
       '<button class="voltar" onclick="nav(paginaAnterior)">←</button>' +
       '<div class="info"><div class="tag">NOVA OBRA</div><div class="num">Criar folha</div></div>' +
     '</div>' +
-    '<label>Cliente *</label>' +
+        '<label>Cliente *</label>' +
     '<div class="autocomplete">' +
-      '<input id="f-cliente-busca" placeholder="Escreve para procurar..." oninput="procurarCliente(this.value)" onfocus="procurarCliente(this.value)" autocomplete="off">' +
+      '<div class="input-limpar">' +
+        '<input id="f-cliente-busca" placeholder="Escreve para procurar..." oninput="procurarCliente(this.value); atualizarLimpar(\'f-cliente-busca\')" onfocus="procurarCliente(this.value)" autocomplete="off">' +
+        '<button type="button" class="btn-limpar" id="f-cliente-busca-limpar" onclick="limparCampo(\'f-cliente-busca\')" title="Limpar">✕</button>' +
+      '</div>' +
       '<input type="hidden" id="f-cliente-id">' +
       '<div id="f-cliente-lista" class="autocomplete-list"></div>' +
     '</div>' +
