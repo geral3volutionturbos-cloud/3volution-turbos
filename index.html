@@ -1126,8 +1126,11 @@ async function guardarEdicao(id) {
 async function renderPesquisar(m, filtroEstado) {
   m.innerHTML =
     '<h2 style="margin-bottom:16px">Pesquisar</h2>' +
-    '<div class="card">' +
-      '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar()" value="' + (filtrosPesquisa.busca || '') + '">' +
+      '<div class="card">' +
+      '<div class="input-limpar">' +
+        '<input id="p-busca" placeholder="Nº OT, cliente, telefone, matrícula..." oninput="filtrar(); atualizarLimpar(\'p-busca\')" value="' + (filtrosPesquisa.busca || '') + '">' +
+        '<button type="button" class="btn-limpar" id="p-busca-limpar" onclick="limparCampo(\'p-busca\')" title="Limpar">✕</button>' +
+      '</div>' +
       '<label class="filtro-label">Estado da obra</label>' +
       '<select id="p-estado" onchange="filtrar()"><option value="">Todos os estados</option>' +
         ESTADOS.map(function(e) { return '<option' + ((filtroEstado === e || filtrosPesquisa.estado === e) ? ' selected' : '') + '>' + e + '</option>'; }).join('') +
