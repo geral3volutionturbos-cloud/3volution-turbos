@@ -131,6 +131,26 @@ select option { background-color: #141414; color: #fff; }
   color: #e11d2e !important;
   font-weight: 700 !important;
 }
+
+/* Botão X para limpar inputs de pesquisa */
+.input-limpar { position: relative; display: block; width: 100%; }
+.input-limpar input { padding-right: 40px !important; margin-bottom: 0; }
+.input-limpar .btn-limpar {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  display: none;
+}
+.input-limpar .btn-limpar:hover { color: #e11d2e; }
+.input-limpar .btn-limpar.visivel { display: block; }
   
 </style>
 </head>
