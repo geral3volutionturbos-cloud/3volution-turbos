@@ -812,6 +812,32 @@ var fTel2 = document.getElementById('f-tel2');
 if (fTel2) fTel2.value = c.telefone2 || '';
   document.getElementById('f-nif').value = c.nif || '';
   document.getElementById('f-cliente-lista').classList.remove('show');
+  atualizarLimpar('f-cliente-busca');
+}
+
+// ===== Botão X para limpar pesquisas =====
+function atualizarLimpar(id) {
+  var inp = document.getElementById(id);
+  var btn = document.getElementById(id + '-limpar');
+  if (!inp || !btn) return;
+  if (inp.value && inp.value.length > 0) {
+    btn.classList.add('visivel');
+  } else {
+    btn.classList.remove('visivel');
+  }
+}
+
+function limparCampo(id) {
+  var inp = document.getElementById(id);
+  if (!inp) return;
+  inp.value = '';
+  inp.focus();
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  atualizarLimpar(id);
+  var lista = document.getElementById('f-cliente-lista');
+  if (lista) lista.classList.remove('show');
+  // Se for o filtro da lista de clientes, re-renderiza a lista toda
+  if (id === 'filtro-clientes') filtrarClientesLista('');
 }
 
 
