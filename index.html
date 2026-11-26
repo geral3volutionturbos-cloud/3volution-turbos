@@ -1155,6 +1155,7 @@ async function renderPesquisar(m, filtroEstado) {
     '<div id="p-lista"></div>';
   window._todasObras = await getObras();
   filtrar();
+  atualizarLimpar('p-busca');
 }
 
   function toggleOrdem() {
