@@ -1242,7 +1242,10 @@ async function renderClientesLista(m) {
       '<div class="info"><div class="tag">CLIENTES</div><div class="num">Lista</div></div>' +
       '<button class="btn btn-primary btn-pequeno" onclick="nav(\'cliente-editar\', \'novo\')">➕ Novo</button>' +
     '</div>' +
-    '<input placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value)">' +
+        '<div class="input-limpar" style="margin-bottom:12px">' +
+      '<input id="filtro-clientes" placeholder="Filtrar por nome..." oninput="filtrarClientesLista(this.value); atualizarLimpar(\'filtro-clientes\')">' +
+      '<button type="button" class="btn-limpar" id="filtro-clientes-limpar" onclick="limparCampo(\'filtro-clientes\')" title="Limpar">✕</button>' +
+    '</div>' +
     '<div id="cli-lista">' + clientes.map(cardCliente).join('') + '</div>';
   window._clientesCache2 = clientes;
 }
