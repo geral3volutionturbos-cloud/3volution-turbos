@@ -626,9 +626,11 @@ var isRecentes = filtrosPesquisa.ordenacao === 'recentes';
   var contagensCat = {};
   CATEGORIAS.forEach(function(cat) { contagensCat[cat] = 0; });
   var totalUrgentes = 0;
+  var totalWeb = 0;
   todasAbertas.forEach(function(o) {
     if (o.categoria && contagensCat.hasOwnProperty(o.categoria)) contagensCat[o.categoria]++;
     if (o.urgente === true) totalUrgentes++;
+    if (o.venda_web === true) totalWeb++;
   });
 
   var obrasPagina = todasAbertas.slice(0, itemsAMostrar);
