@@ -836,8 +836,8 @@ function limparCampo(id) {
   atualizarLimpar(id);
   var lista = document.getElementById('f-cliente-lista');
   if (lista) lista.classList.remove('show');
-  // Se for o filtro da lista de clientes, re-renderiza a lista toda
   if (id === 'filtro-clientes') filtrarClientesLista('');
+  if (id === 'p-busca') filtrar();
 }
 
 
