@@ -2,33 +2,31 @@ name: Backup da Base de Dados
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Corre todos os dias à meia-noite (UTC)
-  workflow_dispatch: # Permite correr manualmente no separador Actions
+    - cron: '0 0 * * *' # Corre todos os dias à meia-noite
+  workflow_dispatch: # Permite correr manualmente
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      supabase_db_url: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@v4
       
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 2.104.0
+      - name: Instalar PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
           
-      - name: Backup roles
-        run: supabase db dump --db-url "$supabase_db_url" -f roles.sql --role-only
-        
-      - name: Backup schema
-        run: supabase db dump --db-url "$supabase_db_url" -f schema.sql
-        
-      - name: Backup data
-        run: supabase db dump --db-url "$supabase_db_url" -f data.sql --data-only --use-copy -x "storage.buckets_vectors" -x "storage.vector_indexes"
-        
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Fazer Backup
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          pg_dump --schema-only --no-owner --no-privileges --dbname="$DB_URL" > schema.sql
+          pg_dump --data-only --dbname="$DB_URL" > data.sql
+          
+      - name: Guardar Ficheiros no GitHub
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Backup automático da base de dados
           file_pattern: '*.sql'
