@@ -26,8 +26,9 @@ jobs:
       - name: Fazer Backup
         run: |
           export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
-          pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --schema-only --no-owner --no-privileges > schema.sql
-          pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --data-only > data.sql
+          # ATENÇÃO: Substitui o HOST abaixo pelo host que copiaste do Supabase (Direct Connection)
+          pg_dump -h db.jxexagghrhjxqdbbxcwl.supabase.co -p 5432 -U postgres -d postgres --schema-only --no-owner --no-privileges > schema.sql
+          pg_dump -h db.jxexagghrhjxqdbbxcwl.supabase.co -p 5432 -U postgres -d postgres --data-only > data.sql
           
       - name: Guardar Ficheiros no GitHub
         uses: stefanzweifel/git-auto-commit-action@v5
