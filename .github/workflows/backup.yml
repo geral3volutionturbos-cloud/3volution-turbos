@@ -24,9 +24,8 @@ jobs:
           sudo apt-get install -y postgresql-client-17
           
       - name: Fazer Backup
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
+          export PGPASSWORD="${{ secrets.SUPABASE_DB_PASSWORD }}"
           pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --schema-only --no-owner --no-privileges > schema.sql
           pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --data-only > data.sql
           
