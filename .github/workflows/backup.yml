@@ -2,8 +2,8 @@ name: Backup da Base de Dados
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Corre todos os dias à meia-noite
-  workflow_dispatch: # Permite correr manualmente
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Instalar PostgreSQL 17 (Método Moderno)
+      - name: Instalar PostgreSQL 17
         run: |
           sudo apt-get update
           sudo apt-get install -y curl ca-certificates gnupg lsb-release
@@ -25,10 +25,10 @@ jobs:
           
       - name: Fazer Backup
         env:
-          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          pg_dump --schema-only --no-owner --no-privileges --dbname="$DB_URL" > schema.sql
-          pg_dump --data-only --dbname="$DB_URL" > data.sql
+          pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --schema-only --no-owner --no-privileges > schema.sql
+          pg_dump -h aws-0-eu-central-1.pooler.supabase.com -p 5432 -U postgres.jxexagghrhjxqdbbxcwl -d postgres --data-only > data.sql
           
       - name: Guardar Ficheiros no GitHub
         uses: stefanzweifel/git-auto-commit-action@v5
